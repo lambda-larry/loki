@@ -23,6 +23,7 @@ CSCOPE_FLAGS := -bqvR
 
 CLANG_FORMAT := clang-format
 
+RE2C := re2c
 
 ################################################################################
 ## Compiler flags                                                       [XCF] ##
@@ -115,6 +116,9 @@ all: $(BIN) $(SUB_BIN)
 %.so: LDFLAGS += -shared
 %.so:
 	$(CC) $^ $(LDFLAGS) $(LDLIBS) -o $@
+
+%.c: %.c.re
+	$(RE2C) --lang c -o $@ $<
 
 ################################################################################
 ## Misc                                                                 [XMS] ##
