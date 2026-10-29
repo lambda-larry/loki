@@ -21,6 +21,8 @@ struct string {
 	size_t length;
 	const char *s;
 };
+#define lex_sv string
+#define qbe_sv string
 
 extern void log_todo(const  char *restrict fmt, ...);
 extern void log_debug(const char *restrict fmt, ...);
