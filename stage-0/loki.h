@@ -24,6 +24,8 @@ struct string {
 #define lex_sv string
 #define qbe_sv string
 
+#include "lex.h"
+
 extern void log_todo(const  char *restrict fmt, ...);
 extern void log_debug(const char *restrict fmt, ...);
 extern void log_trace(const char *restrict fmt, ...);
@@ -32,6 +34,9 @@ extern void log_warn(const  char *restrict fmt, ...);
 extern void log_error(const char *restrict fmt, ...);
 extern void log_fatal(const char *restrict fmt, ...);
 
+extern void diag_info(struct token token, const char *fmt, ...);
+extern void diag_warn(struct token token, const char *fmt, ...);
+extern void diag_error(struct token token, const char *fmt, ...);
 
 extern bool file_load_string(const char *filename, struct string *out);
 

@@ -22,14 +22,16 @@ main(int argc, const char *argv[argc])
 	struct token token = {};
 
 	while (lex(&lexer, &token)) {
-		printf("%.*s:%d:%d: %.*s\n",
+		printf("%.*s:%d:%d: %.*s (%hi)\n",
 			(int)token.src_loc.filename.length,
 			token.src_loc.filename.s,
 			token.src_loc.line,
 			token.src_loc.column,
 			(int)token.sv.length,
-			token.sv.s
+			token.sv.s,
+			token.line_offset
 		);
+		diag_info(token, "yes");
 	}
 
 
