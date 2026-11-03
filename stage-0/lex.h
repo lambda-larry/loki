@@ -27,7 +27,6 @@ struct src_loc {
 struct token {
 	enum token_type type;
 	int16_t line_offset;
-	int32_t line_offset_end;
 	struct lex_sv sv;
 
 	struct src_loc src_loc;

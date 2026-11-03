@@ -8,11 +8,10 @@
 #define RET_CAP(tok, t1, t2) (                                                                     \
 	(lex->src_loc.column = t2 - lex->cursor.line_marker),                                      \
 	(*ret = (struct token){                                                                    \
-		.type = tok,                                                                       \
-		.line_offset     = lex->cursor.line_marker - (t1),                                 \
-		.line_offset_end = lex->buf.length - (t1),                                         \
-		.src_loc = lex->src_loc,                                                           \
-		.sv = {.s = &lex->buf.s[(t1)], .length = (t2) - (t1)}                              \
+		.type        = tok,                                                                \
+		.line_offset = lex->cursor.line_marker - (t1),                                     \
+		.src_loc     = lex->src_loc,                                                       \
+		.sv          = {.s = &lex->buf.s[(t1)], .length = (t2) - (t1)}                     \
 	}), true)
 
 #define RET(tok) RET_CAP(tok, begin, lex->cursor.pos)
