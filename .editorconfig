@@ -15,6 +15,9 @@ spelling_language = en-US
 end_of_line = crlf
 trim_trailing_whitespace = false
 
+[*.tsv]
+trim_trailing_whitespace = false
+
 [Makefile]
 indent_style = tab
 indent_size  = 8
