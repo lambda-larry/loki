@@ -6,7 +6,7 @@
 #include "lex.h"
 
 #define RET_CAP(tok, t1, t2) (                                                                     \
-	(lex->src_loc.column = begin - lex->cursor.line_marker + 1),                               \
+	(lex->src_loc.column = t2 - lex->cursor.line_marker),                                      \
 	(*ret = (struct token){                                                                    \
 		.type = tok,                                                                       \
 		.line_offset     = lex->cursor.line_marker - (t1),                                 \
