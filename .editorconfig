@@ -13,7 +13,7 @@ spelling_language = en-US
 
 [*.csv]
 end_of_line = crlf
-insert_final_newline = true
+trim_trailing_whitespace = false
 
 [Makefile]
 indent_style = tab
