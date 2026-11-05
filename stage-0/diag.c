@@ -70,7 +70,7 @@ static void _diag(enum diagnostic_level level, struct token token, const char *f
 		" %.*s",
 		(int)token.src_loc.filename.length,
 		token.src_loc.filename.s,
-		token.src_loc.line,
+		token.src_loc.line + 1,
 		j,
 		out
 	);
