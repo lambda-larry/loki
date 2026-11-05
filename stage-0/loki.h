@@ -26,6 +26,11 @@ struct string {
 
 #include "lex.h"
 
+#include <stdio.h>
+
+extern void log_init(FILE *out);
+extern void log_fini();
+
 extern void log_todo(const  char *restrict fmt, ...);
 extern void log_debug(const char *restrict fmt, ...);
 extern void log_trace(const char *restrict fmt, ...);
