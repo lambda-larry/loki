@@ -17,6 +17,24 @@ typedef uint64_t u64;
 
 #define CSI "\033["
 
+#define VT_BLACK          CSI "30m"
+#define VT_RED            CSI "31m"
+#define VT_GREEN          CSI "32m"
+#define VT_YELLOW         CSI "33m"
+#define VT_BLUE           CSI "34m"
+#define VT_MAGENTA        CSI "35m"
+#define VT_CYAN           CSI "36m"
+#define VT_WHITE          CSI "37m"
+#define VT_BRIGHT_BLACK   CSI "90m"
+#define VT_BRIGHT_RED     CSI "91m"
+#define VT_BRIGHT_GREEN   CSI "92m"
+#define VT_BRIGHT_YELLOW  CSI "93m"
+#define VT_BRIGHT_BLUE    CSI "94m"
+#define VT_BRIGHT_MAGENTA CSI "95m"
+#define VT_BRIGHT_CYAN    CSI "96m"
+#define VT_BRIGHT_WHITE   CSI "97m"
+
+
 #define VT_RESET     CSI "0m"
 #define VT_BOLD      CSI "1m"
 #define VT_ITALIC    CSI "3m"
@@ -43,7 +61,7 @@ struct diagnostic {
 
 
 
-extern void print_token_line(FILE *f, struct token token);
+extern void print_token_line(enum diagnostic_level level, FILE *f, struct token token);
 
 static void _diag(enum diagnostic_level level, struct token token, const char *fmt, va_list args)
 {
@@ -53,6 +71,18 @@ static void _diag(enum diagnostic_level level, struct token token, const char *f
 	buffer[++n] = 0;
 
 	int j = 0;
+
+	switch (level) {
+	case NOTE:  j += snprintf(out + j, sizeof out - j, VT_BRIGHT_CYAN "NOTE:");  break;
+	case INFO:  j += snprintf(out + j, sizeof out - j, VT_BRIGHT_CYAN "INFO:");  break;
+	case WARN:  j += snprintf(out + j, sizeof out - j, VT_YELLOW      "WARN:");  break;
+	case ERROR: j += snprintf(out + j, sizeof out - j, VT_RED         "ERROR:"); break;
+	case FATAL: j += snprintf(out + j, sizeof out - j, VT_RED         "FATAL:"); break;
+	case HINT:  j += snprintf(out + j, sizeof out - j, VT_BRIGHT_CYAN "HINT:");  break;
+
+	}
+	j += snprintf(out + j, sizeof out - j, " "VT_RESET);
+
 	for (int i = 0; i < n - 1; i++) {
 		if ('{' == buffer[i + 0] && '}' == buffer[i + 1]) {
 			j += snprintf(out + j, sizeof out - j, "%.*s", (int)token.sv.length, token.sv.s);
@@ -75,7 +105,7 @@ static void _diag(enum diagnostic_level level, struct token token, const char *f
 		out
 	);
 
-	print_token_line(stderr, token);
+	print_token_line(level, stderr, token);
 }
 
 extern void diag_error(struct token token, const char *fmt, ...)
@@ -102,7 +132,7 @@ extern void diag_info(struct token token, const char *fmt, ...)
 	va_end(args);
 }
 
-extern void print_token_line(FILE *f, struct token token)
+extern void print_token_line(enum diagnostic_level level, FILE *f, struct token token)
 {
 	const char *line = &token.sv.s[token.line_offset];
 	int line_len = 0;
@@ -115,9 +145,19 @@ extern void print_token_line(FILE *f, struct token token)
 		default:   fputc(' ',  f);  break;
 		}
 	}
+	switch (level) {
+	case NOTE:  fprintf(f, VT_BRIGHT_CYAN); break;
+	case INFO:  fprintf(f, VT_BRIGHT_CYAN); break;
+	case WARN:  fprintf(f, VT_YELLOW);      break;
+	case ERROR: fprintf(f, VT_RED);         break;
+	case FATAL: fprintf(f, VT_RED);         break;
+	case HINT:  fprintf(f, VT_BRIGHT_CYAN); break;
+	}
 	for (u32 i = 0; i < token.sv.length; i++) {
 		fputc('^', f);
 	}
+	fprintf(f, VT_RESET);
+
 	fputc('\n', f);
 
 }
