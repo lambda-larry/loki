@@ -87,6 +87,9 @@ lex_start:
 	  "//".*[\x0A]  { NEW_LINE(); goto lex_begin_line; }
 	  "/*"          {             goto lex_comment;    }
 
+	  "return" { return RET(TT_KW_RETURN); }
+
+
 	  hex = [0-9a-fA-F];
 	  dec = [0-9];
 	  oct = [0-7];
@@ -96,6 +99,14 @@ lex_start:
 	  "0x"hex+("'"hex+)* { return RET(TT_LIT_NUM); }
 	  "0b"bin+("'"bin+)* { return RET(TT_LIT_NUM); }
 	  "0o"oct+("'"oct+)* { return RET(TT_LIT_NUM); }
+
+	  [_a-zA-Z][0-9a-zA-Z_]* { return RET(TT_IDENT); }
+
+	  "(" { return RET(TT_LPAREN);    }
+	  ")" { return RET(TT_RPAREN);    }
+	  "{" { return RET(TT_LBRACE);    }
+	  "}" { return RET(TT_RBRACE);    }
+	  ";" { return RET(TT_SEMICOLON); }
 
 	  $ { return false; }
 
