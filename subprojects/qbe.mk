@@ -1,11 +1,13 @@
 export PATH := ${PWD}/subprojects/qbe:${PATH}
 
+QBE := subprojects/qbe/qbe
+
 subprojects/qbe/%.o: CC       := gcc
 subprojects/qbe/%.o: CFLAGS   := -std=c99 -pedantic
 subprojects/qbe/%.o: CFLAGS   += -O2
 subprojects/qbe/%.o: CPPFLAGS += -MMD
 
-subprojects/qbe/qbe: LDFLAGS += -static
+${QBE}: LDFLAGS += -static
 
 ifeq ($(shell uname -s),Darwin)
 ifneq ($(filter arm%,$(shell uname -p)),)
@@ -26,12 +28,12 @@ endif
 -include $(wildcard subprojects/qbe/*.d)
 -include $(wildcard subprojects/qbe/*/*.d)
 
-subprojects/qbe/qbe: $(patsubst %.c, %.o, $(wildcard subprojects/qbe/*.c))
-subprojects/qbe/qbe: $(patsubst %.c, %.o, $(wildcard subprojects/qbe/amd64/*.c))
-subprojects/qbe/qbe: $(patsubst %.c, %.o, $(wildcard subprojects/qbe/arm64/*.c))
-subprojects/qbe/qbe: $(patsubst %.c, %.o, $(wildcard subprojects/qbe/rv64/*.c))
+${QBE}: $(patsubst %.c, %.o, $(wildcard subprojects/qbe/*.c))
+${QBE}: $(patsubst %.c, %.o, $(wildcard subprojects/qbe/amd64/*.c))
+${QBE}: $(patsubst %.c, %.o, $(wildcard subprojects/qbe/arm64/*.c))
+${QBE}: $(patsubst %.c, %.o, $(wildcard subprojects/qbe/rv64/*.c))
 
-subprojects/qbe/qbe:
+${QBE}:
 	$(CC) $(LDFLAGS) $^ -o $@
 
 subprojects/qbe/config.h:
@@ -39,10 +41,10 @@ subprojects/qbe/config.h:
 
 subprojects/qbe/main.o: subprojects/qbe/config.h
 
-build-qbe: subprojects/qbe/qbe
+build-qbe: ${QBE}
 
 clean-qbe:
-	$(RM) subprojects/qbe/*.o subprojects/qbe/*/*.o subprojects/qbe/qbe
+	$(RM) subprojects/qbe/*.o subprojects/qbe/*/*.o ${QBE}
 
 clean-all: clean-qbe
 
