@@ -48,6 +48,7 @@ main(int argc, const char *argv[argc])
 
 	struct ast_node *ast_func = {};
 
+	log_info("parsing");
 	parse_decl_func(&lexer, &ast_func);
 
 	// }}}

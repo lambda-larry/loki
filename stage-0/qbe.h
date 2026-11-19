@@ -246,5 +246,5 @@ enum qbe_inst_kind
 };
 
 struct qbe_inst {
-	int i;
+	enum qbe_inst_kind kind;
 };
