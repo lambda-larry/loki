@@ -37,13 +37,13 @@ struct ast_node {
 	struct lex lex_begin;
 	struct lex lex_end;
 
-	struct token token_begin;
-	struct token token_end;
-
-	struct token identifier;
-
-	struct token literal;
-	i64 num;
+	union {
+		struct token identifier;
+		struct {
+			struct token literal;
+			i64 num;
+		};
+	};
 
 	union {
 		struct ast_node *stmt;
@@ -95,11 +95,45 @@ parse_stmt_ret(struct lex *lex, struct ast_node **ret)
 		goto fail;
 
 	stmt_ret->lex_end = lexer;
-	if (!parse_expect(&lexer, &stmt_ret->token_end, TT_SEMICOLON, ";"))
+	if (!parse_expect(&lexer, &(struct token){}, TT_SEMICOLON, ";"))
 		goto fail;
 
 	*lex = lexer;
 	*ret = stmt_ret;
+	return true;
+
+fail:
+	nodes_cnt = node_chkp;
+	*ret = nullptr;
+	return false;
+}
+
+extern bool
+parse_decl_func(struct lex *lex, struct ast_node **ret)
+{
+	size_t node_chkp = nodes_cnt;
+	struct lex lexer = *lex;
+	struct ast_node *decl_func = ast_node_alloc(AST_NODE_DECL_FUNC, .lex_begin = lexer);
+
+	if (!parse_expect(&lexer, &(struct token){}, TT_IDENT, "identifier"))
+		goto fail;
+
+	if (!parse_expect(&lexer, &decl_func->identifier, TT_IDENT, "identifier"))
+		goto fail;
+
+	if (!parse_expect(&lexer, &(struct token){}, TT_LPAREN, "(")) goto fail;
+	if (!parse_expect(&lexer, &(struct token){}, TT_RPAREN, ")")) goto fail;
+	if (!parse_expect(&lexer, &(struct token){}, TT_LBRACE, "{")) goto fail;
+
+	if (!parse_stmt_ret(&lexer, &decl_func->stmt))
+		goto fail;
+
+	decl_func->lex_end = lexer;
+	if (!parse_expect(&lexer, &(struct token){}, TT_RBRACE, "}"))
+		goto fail;
+
+	*lex = lexer;
+	*ret = decl_func;
 	return true;
 
 fail:
@@ -128,9 +162,9 @@ main(int argc, const char *argv[argc])
 		.src_loc.filename.length = strlen(filename),
 	};
 	struct lex checkpoint = lexer;
-	struct token token = {};
 
 #if 0
+	struct token token = {};
 	while (lex(&lexer, &token)) {
 		printf("%.*s:%d:%d: %.*s\n",
 			(int)token.src_loc.filename.length,
@@ -149,19 +183,9 @@ main(int argc, const char *argv[argc])
 
 	// {{{ parser
 
-	struct ast_node *ast_func = ast_node_alloc(AST_NODE_DECL_FUNC, .lex_begin = lexer);
+	struct ast_node *ast_func = {};
 
-	parse_expect(&lexer, &(struct token){}, TT_IDENT, "identifier");
-	parse_expect(&lexer, &ast_func->identifier,  TT_IDENT, "identifier");
-
-	parse_expect(&lexer, &token, TT_LPAREN, "(");
-	parse_expect(&lexer, &token, TT_RPAREN, ")");
-	parse_expect(&lexer, &token, TT_LBRACE, "{");
-
-	parse_stmt_ret(&lexer, &ast_func->stmt);
-
-	ast_func->lex_end = lexer;
-	parse_expect(&lexer, &ast_func->token_end, TT_RBRACE, "}");
+	parse_decl_func(&lexer, &ast_func);
 
 	// }}}
 
