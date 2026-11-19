@@ -45,4 +45,40 @@ extern void diag_error(struct token token, const char *fmt, ...);
 
 extern bool file_load_string(const char *filename, struct string *out);
 
+enum ast_node_kind
+{
+	AST_NODE_NONE,
+	AST_NODE_MODULE,
+	AST_NODE_DECL_FUNC,
+	AST_NODE_STMT_RET,
+	AST_NODE_EXPR_LIT_NUM,
+};
+
+struct ast_node {
+	enum ast_node_kind kind;
+
+	struct lex lex_begin;
+	struct lex lex_end;
+
+	union {
+		struct token identifier;
+		struct {
+			struct token literal;
+			i64 num;
+		};
+	};
+
+	union {
+		struct ast_node *stmt;
+		struct ast_node *ret_val;
+	};
+
+	struct ast_node *next;
+	struct ast_node *prev;
+};
+
+extern bool parse_decl_func(struct lex *lex, struct ast_node **ret);
+extern bool parse_stmt_ret(struct lex *lex, struct ast_node **ret);
+extern bool parse_expr_lit_num(struct lex *lex, struct ast_node **ret);
+
 #endif
