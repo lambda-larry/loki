@@ -22,6 +22,61 @@ parse_expect(struct lex *lexer, struct token *token, enum token_type type, const
 	return true;
 }
 
+enum ast_node_kind
+{
+	AST_NODE_NONE,
+	AST_NODE_MODULE,
+	AST_NODE_DECL_FUNC,
+	AST_NODE_STMT_RET,
+	AST_NODE_EXPR_LIT_NUM,
+};
+
+struct ast_node {
+	enum ast_node_kind kind;
+
+	struct token token_begin;
+	struct token token_end;
+
+	struct token identifier;
+
+	struct token token;
+	i64 num;
+
+	union {
+		struct ast_node *stmt;
+		struct ast_node *ret_val;
+	};
+
+	struct ast_node *next;
+	struct ast_node *prev;
+};
+
+static size_t nodes_cnt = 0;
+static struct ast_node nodes[512];
+
+#define ast_node_alloc(type, ...) ((nodes[nodes_cnt] = (struct ast_node){ .kind = type, __VA_ARGS__ }), &nodes[nodes_cnt++])
+
+extern bool
+parse_stmt_ret(struct lex *lex, struct ast_node **ret)
+{
+	size_t node_chkp = nodes_cnt;
+	struct lex lexer = *lex;
+	struct ast_node *stmt_ret = ast_node_alloc(AST_NODE_STMT_RET);
+
+	if (!parse_expect(&lexer, &stmt_ret->token_begin, TT_KW_RETURN, "return"))
+		goto fail;
+
+	*lex = lexer;
+	*ret = stmt_ret;
+	return true;
+
+fail:
+	nodes_cnt = node_chkp;
+	*ret = nullptr;
+	return false;
+
+}
+
 extern int
 main(int argc, const char *argv[argc])
 {
@@ -63,39 +118,6 @@ main(int argc, const char *argv[argc])
 
 	// {{{ parser
 
-	enum ast_node_kind
-	{
-		AST_NODE_NONE,
-		AST_NODE_MODULE,
-		AST_NODE_DECL_FUNC,
-		AST_NODE_STMT_RET,
-		AST_NODE_EXPR_LIT_NUM,
-	};
-
-	struct ast_node {
-		enum ast_node_kind kind;
-
-		struct token token_begin;
-		struct token token_end;
-
-		struct token identifier;
-
-		struct token token;
-		i64 num;
-
-		union {
-			struct ast_node *stmt;
-			struct ast_node *ret_val;
-		};
-
-		struct ast_node *next;
-		struct ast_node *prev;
-	};
-
-	static size_t nodes_cnt = 0;
-	static struct ast_node nodes[512];
-#define ast_node_alloc(type, ...) ((nodes[nodes_cnt] = (struct ast_node){ .kind = type, __VA_ARGS__ }), &nodes[nodes_cnt++])
-
 	struct ast_node *ast_func = ast_node_alloc(AST_NODE_DECL_FUNC);
 
 	parse_expect(&lexer, &ast_func->token_begin, TT_IDENT, "identifier");
@@ -105,9 +127,8 @@ main(int argc, const char *argv[argc])
 	parse_expect(&lexer, &token, TT_RPAREN, ")");
 	parse_expect(&lexer, &token, TT_LBRACE, "{");
 
-	struct ast_node *stmt_ret = ast_node_alloc(AST_NODE_STMT_RET);
-
-	parse_expect(&lexer, &stmt_ret->token_begin, TT_KW_RETURN, "return");
+	struct ast_node *stmt_ret = nullptr;
+	parse_stmt_ret(&lexer, &stmt_ret);
 
 	struct ast_node *expr_lit_num = ast_node_alloc(AST_NODE_EXPR_LIT_NUM);
 
