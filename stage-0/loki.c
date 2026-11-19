@@ -7,7 +7,7 @@ extern size_t strlen(const char *);
 
 
 extern bool
-parse_expect(struct lex *lexer, struct token *token, enum token_type type, const char *lit)
+parse_expect(struct lex *lexer, struct token *token, enum token_type type, const char *expect)
 {
 	if (!lex(lexer, token)) {
 		diag_error(*token, "Unexpected EOF");
@@ -15,7 +15,7 @@ parse_expect(struct lex *lexer, struct token *token, enum token_type type, const
 	}
 
 	if (token->type != type) {
-		diag_error(*token, "Expected %s, got {}", lit);
+		diag_error(*token, "Expected %s, got {}", expect);
 		return false;
 	}
 
@@ -34,12 +34,15 @@ enum ast_node_kind
 struct ast_node {
 	enum ast_node_kind kind;
 
+	struct lex lex_begin;
+	struct lex lex_end;
+
 	struct token token_begin;
 	struct token token_end;
 
 	struct token identifier;
 
-	struct token token;
+	struct token literal;
 	i64 num;
 
 	union {
@@ -57,13 +60,42 @@ static struct ast_node nodes[512];
 #define ast_node_alloc(type, ...) ((nodes[nodes_cnt] = (struct ast_node){ .kind = type, __VA_ARGS__ }), &nodes[nodes_cnt++])
 
 extern bool
+parse_expr_lit_num(struct lex *lex, struct ast_node **ret)
+{
+	size_t node_chkp = nodes_cnt;
+	struct lex lexer = *lex;
+	struct ast_node *expr_lit_num = ast_node_alloc(AST_NODE_EXPR_LIT_NUM, .lex_begin = lexer);
+
+	expr_lit_num->lex_end = lexer;
+
+	if (!parse_expect(&lexer, &expr_lit_num->literal, TT_LIT_NUM, "number"))
+		goto fail;
+
+	*lex = lexer;
+	*ret = expr_lit_num;
+	return true;
+
+fail:
+	nodes_cnt = node_chkp;
+	*ret = nullptr;
+	return false;
+}
+
+extern bool
 parse_stmt_ret(struct lex *lex, struct ast_node **ret)
 {
 	size_t node_chkp = nodes_cnt;
 	struct lex lexer = *lex;
-	struct ast_node *stmt_ret = ast_node_alloc(AST_NODE_STMT_RET);
+	struct ast_node *stmt_ret = ast_node_alloc(AST_NODE_STMT_RET, .lex_begin = lexer);
 
-	if (!parse_expect(&lexer, &stmt_ret->token_begin, TT_KW_RETURN, "return"))
+	if (!parse_expect(&lexer, &(struct token){}, TT_KW_RETURN, "return"))
+		goto fail;
+
+	if (!parse_expr_lit_num(&lexer, &stmt_ret->ret_val))
+		goto fail;
+
+	stmt_ret->lex_end = lexer;
+	if (!parse_expect(&lexer, &stmt_ret->token_end, TT_SEMICOLON, ";"))
 		goto fail;
 
 	*lex = lexer;
@@ -74,7 +106,6 @@ fail:
 	nodes_cnt = node_chkp;
 	*ret = nullptr;
 	return false;
-
 }
 
 extern int
@@ -118,28 +149,18 @@ main(int argc, const char *argv[argc])
 
 	// {{{ parser
 
-	struct ast_node *ast_func = ast_node_alloc(AST_NODE_DECL_FUNC);
+	struct ast_node *ast_func = ast_node_alloc(AST_NODE_DECL_FUNC, .lex_begin = lexer);
 
-	parse_expect(&lexer, &ast_func->token_begin, TT_IDENT, "identifier");
+	parse_expect(&lexer, &(struct token){}, TT_IDENT, "identifier");
 	parse_expect(&lexer, &ast_func->identifier,  TT_IDENT, "identifier");
 
 	parse_expect(&lexer, &token, TT_LPAREN, "(");
 	parse_expect(&lexer, &token, TT_RPAREN, ")");
 	parse_expect(&lexer, &token, TT_LBRACE, "{");
 
-	struct ast_node *stmt_ret = nullptr;
-	parse_stmt_ret(&lexer, &stmt_ret);
+	parse_stmt_ret(&lexer, &ast_func->stmt);
 
-	struct ast_node *expr_lit_num = ast_node_alloc(AST_NODE_EXPR_LIT_NUM);
-
-	parse_expect(&lexer, &expr_lit_num->token, TT_LIT_NUM, "number");
-
-
-	parse_expect(&lexer, &stmt_ret->token_end, TT_SEMICOLON, ";");
-	stmt_ret->ret_val = expr_lit_num;
-
-	ast_func->stmt = stmt_ret;
-
+	ast_func->lex_end = lexer;
 	parse_expect(&lexer, &ast_func->token_end, TT_RBRACE, "}");
 
 	// }}}
