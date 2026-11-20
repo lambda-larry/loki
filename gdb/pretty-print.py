@@ -43,6 +43,19 @@ class token(gdb.ValuePrinter):
             case _:
                 return [(field.name, self.__val[field.name]) for field in self.__val.type.fields()]
 
+class lexer(gdb.ValuePrinter):
+    def __init__(self, val):
+        self.__val = val
+
+    def children(self):
+        buf = eval(str(self.__val['buf']))
+        cur = int(self.__val['cursor']['pos'])
+        tok = buf[cur:].split()[0]
+        yield ('tok', f'"{tok}"')
+        yield ('cursor', cur)
+
+
+
 
 pp.add_printer('sv',     '^string$', sv)
 pp.add_printer('qbe_sv', '^qbe_sv$', sv)
@@ -50,5 +63,6 @@ pp.add_printer('lex_sv', '^lex_sv$', sv)
 
 pp.add_printer('src_loc', '^src_loc$', src_loc)
 pp.add_printer('token',   '^token$',   token)
+pp.add_printer('lexer',   '^lex$',     lexer)
 
 gdb.printing.register_pretty_printer(gdb.current_objfile(), pp, replace=True)
