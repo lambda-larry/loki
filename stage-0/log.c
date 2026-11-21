@@ -76,7 +76,7 @@ log_init(FILE *out)
 }
 
 extern void
-log_fini()
+log_fini(void)
 {
 	fclose(g_log.out);
 }
