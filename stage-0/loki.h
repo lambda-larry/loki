@@ -60,18 +60,11 @@ struct ast_node {
 	struct lex lex_begin;
 	struct lex lex_end;
 
-	union {
-		struct token identifier;
-		struct {
-			struct token literal;
-			i64 num;
-		};
-	};
+	struct token identifier;
+	struct token literal;
 
-	union {
-		struct ast_node *stmt;
-		struct ast_node *ret_val;
-	};
+	struct ast_node *stmt;
+	struct ast_node *ret_val;
 
 	struct ast_node *next;
 	struct ast_node *prev;

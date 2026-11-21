@@ -15,6 +15,7 @@ class sv(gdb.ValuePrinter):
         len = int(self.__val['length'])
         return self.__val['s'].string(length=len)
 
+
 class src_loc(gdb.ValuePrinter):
     def __init__(self, val):
         self.__val = val
@@ -31,6 +32,7 @@ class src_loc(gdb.ValuePrinter):
             return '{}'
         return f'{filename}:{self.__val['line']}:{self.__val['column']}'
 
+
 class token(gdb.ValuePrinter):
     def __init__(self, val):
         self.__val = val
@@ -42,6 +44,7 @@ class token(gdb.ValuePrinter):
                 return iter([])
             case _:
                 return [(field.name, self.__val[field.name]) for field in self.__val.type.fields()]
+
 
 class lexer(gdb.ValuePrinter):
     def __init__(self, val):
@@ -55,6 +58,26 @@ class lexer(gdb.ValuePrinter):
         yield ('cursor', cur)
 
 
+class ast_node(gdb.ValuePrinter):
+    def __init__(self, val):
+        self.__val = val
+
+    def children(self):
+        if 0 == self.__val['kind']:
+            yield 'kind', self.__val['kind']
+            return None
+
+        for field in self.__val.type.fields():
+            name  = field.name
+            value = self.__val[name]
+
+            if value.type.is_scalar and 0 == int(value):
+                continue
+
+            if 'token' == value.type.tag and 0 == value['type']:
+                continue
+
+            yield name, value
 
 
 pp.add_printer('sv',     '^string$', sv)
@@ -64,5 +87,7 @@ pp.add_printer('lex_sv', '^lex_sv$', sv)
 pp.add_printer('src_loc', '^src_loc$', src_loc)
 pp.add_printer('token',   '^token$',   token)
 pp.add_printer('lexer',   '^lex$',     lexer)
+
+pp.add_printer('ast_node', '^ast_node$', ast_node)
 
 gdb.printing.register_pretty_printer(gdb.current_objfile(), pp, replace=True)
