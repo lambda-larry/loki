@@ -55,7 +55,7 @@ extern void *realloc(void *p, size_t size);
 
 #ifndef qbe_sv
 struct qbe_sv {
-	size_t len;
+	size_t length;
 	const char *s;
 };
 #endif
