@@ -38,16 +38,13 @@ extern void *realloc(void *p, size_t size);
 #define qbe_da_append(list, item) do {                                                              \
 	if (0 == (list)->capacity) {                                                                \
 		(list)->capacity = 16;                                                              \
-		(list)->data     = qbe_realloc(                                                     \
-			(list)->data,                                                               \
-			sizeof (*(list)->data) * (list)->capacity                                   \
-		);                                                                                  \
+		(list)->data     = qbe_realloc((list)->data, sizeof (item) * (list)->capacity);     \
 	}                                                                                           \
 	if ((list)->count >= (list)->capacity) {                                                    \
 		while ((list)->count >= (list)->capacity) {                                         \
 			(list)->capacity *= 2;                                                      \
 		}                                                                                   \
-		(list)->data = qbe_realloc((list)->data, sizeof (*(list)->data) * (list)->capacity);\
+		(list)->data = qbe_realloc((list)->data, sizeof (item) * (list)->capacity);         \
 	}                                                                                           \
 	(list)->data[(list)->count++] = (item);                                                     \
 } while (false)
