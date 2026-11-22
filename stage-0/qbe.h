@@ -35,18 +35,21 @@ extern void *realloc(void *p, size_t size);
 }
 
 
-#define qbe_da_append(type, list, item) do {                                                        \
+#define qbe_da_append(list, item) do {                                                              \
 	if (0 == (list)->capacity) {                                                                \
 		(list)->capacity = 16;                                                              \
-		(list)->data     = qbe_realloc((list)->data, sizeof (type) * (list)->capacity);     \
+		(list)->data     = qbe_realloc(                                                     \
+			(list)->data,                                                               \
+			sizeof (*(list)->data) * (list)->capacity                                   \
+		);                                                                                  \
 	}                                                                                           \
 	if ((list)->count >= (list)->capacity) {                                                    \
 		while ((list)->count >= (list)->capacity) {                                         \
 			(list)->capacity *= 2;                                                      \
 		}                                                                                   \
-		(list)->data = qbe_realloc((list)->data, sizeof (type) * (list)->capacity);         \
+		(list)->data = qbe_realloc((list)->data, sizeof (*(list)->data) * (list)->capacity);\
 	}                                                                                           \
-	((type *)(list)->data)[(list)->count++] = (item);                                           \
+	(list)->data[(list)->count++] = (item);                                                     \
 } while (false)
 
 
