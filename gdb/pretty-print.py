@@ -4,6 +4,8 @@ import gdb.types
 
 pp = gdb.printing.RegexpCollectionPrettyPrinter('loki')
 
+var_style = gdb.Style('variable').apply
+
 class sv(gdb.ValuePrinter):
     def __init__(self, val):
         self.__val = val
@@ -43,7 +45,7 @@ class token(gdb.ValuePrinter):
             case 'TT_NONE':
                 return iter([])
             case _:
-                return [(field.name, self.__val[field.name]) for field in self.__val.type.fields()]
+                return [(var_style(field.name), self.__val[field.name]) for field in self.__val.type.fields()]
 
 
 class lexer(gdb.ValuePrinter):
@@ -54,8 +56,8 @@ class lexer(gdb.ValuePrinter):
         buf = eval(str(self.__val['buf']))
         cur = int(self.__val['cursor']['pos'])
         tok = buf[cur:].split()[0]
-        yield ('tok', f'"{tok}"')
-        yield ('cursor', cur)
+        yield (var_style('tok'),    f'"{tok}"')
+        yield (var_style('cursor'), cur)
 
 
 class ast_node(gdb.ValuePrinter):
@@ -77,7 +79,7 @@ class ast_node(gdb.ValuePrinter):
             if 'token' == value.type.tag and 0 == value['type']:
                 continue
 
-            yield name, value
+            yield var_style(name), value
 
 
 pp.add_printer('sv',     '^string$', sv)
