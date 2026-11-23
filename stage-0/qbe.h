@@ -201,13 +201,6 @@ struct qbe_function {
 	qbe_da(struct qbe_block) body;
 };
 
-enum qbe_block_kind
-{
-	QBE_BLOCK_KIND_LABEL,
-	QBE_BLOCK_KIND_INST,
-	QBE_BLOCK_KIND_JMP,
-};
-
 enum qbe_jmp_kind
 {
 	QBE_JMP_KIND_JMP,
@@ -232,12 +225,9 @@ struct qbe_jmp {
 struct qbe_inst;
 
 struct qbe_block {
-	enum qbe_block_kind kind;
-	union {
-		struct qbe_sv label;
-		struct qbe_jmp jmp;
-		qbe_da(struct qbe_inst) inst;
-	};
+	struct qbe_sv label;
+	qbe_da(struct qbe_inst) inst;
+	struct qbe_jmp jmp;
 };
 
 enum qbe_inst_kind
