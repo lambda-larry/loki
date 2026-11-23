@@ -1,5 +1,6 @@
 #include "loki.h"
 #include "lex.h"
+#include "qbe.h"
 
 #include <stdio.h>
 
@@ -50,6 +51,34 @@ main(int argc, const char *argv[argc])
 
 	log_info("parsing");
 	parse_decl_func(&lexer, &ast_func);
+
+	// }}}
+
+	// {{{ QBE
+
+	struct module {
+		qbe_da(struct qbe_function) funcs;
+	};
+
+	struct module module = {};
+
+	struct qbe_function func = {
+		.linkage.export   = true,
+		.ident            = ast_func->identifier.sv,
+		.return_type.type = QBE_ABI_WORD,
+	};
+
+	switch (ast_func->stmt[0].kind) {
+	default: return 1;
+	case AST_NODE_STMT_RET:
+		 struct qbe_block block = {
+			 .jmp.kind  = QBE_JMP_KIND_RET,
+		 };
+		 qbe_da_append(&func.body, block);
+		 break;
+	}
+
+	qbe_da_append(&module.funcs, func);
 
 	// }}}
 
