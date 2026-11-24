@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#define sv_c(x) (struct string){.s = x, .length = strlen(x), }
+
 extern int
 main(int argc, const char *argv[argc])
 {
@@ -56,6 +58,7 @@ main(int argc, const char *argv[argc])
 
 	// {{{ QBE
 
+	log_info("emiting");
 	struct module {
 		qbe_da(struct qbe_function) funcs;
 	};
@@ -72,6 +75,7 @@ main(int argc, const char *argv[argc])
 	default: return 1;
 	case AST_NODE_STMT_RET:
 		 struct qbe_block block = {
+			 .label     = sv_c("start"),
 			 .jmp.kind  = QBE_JMP_KIND_RET,
 		 };
 		 qbe_da_append(&func.body, block);
@@ -79,6 +83,41 @@ main(int argc, const char *argv[argc])
 	}
 
 	qbe_da_append(&module.funcs, func);
+
+	// }}}
+
+	// {{{ emit asm
+	FILE *f = stdout;
+
+	for (size_t i = 0; i < module.funcs.count; i++) {
+		const struct qbe_function *func = &module.funcs.data[i];
+
+		fprintf(f, "export function w $%.*s()\n", (int)func->ident.length, func->ident.s);
+		fprintf(f, "{\n");
+		for (size_t i = 0; i < func->body.count; i++) {
+			const struct qbe_block *block = &func->body.data[i];
+			fprintf(f, "@%.*s\n", (int)block->label.length, block->label.s);
+
+			for (size_t i = 0; i < block->inst.count; i++) {
+				const struct qbe_inst *inst = &block->inst.data[i];
+				(void)inst;
+			}
+
+			switch (block->jmp.kind) {
+			case QBE_JMP_KIND_JMP: return 2;
+			case QBE_JMP_KIND_JNZ: return 3;
+			case QBE_JMP_KIND_RET:
+				fprintf(f, "\tret 0\n");
+				break;
+			case QBE_JMP_KIND_HLT: return 4;
+			}
+
+		}
+		fprintf(f, "}\n");
+
+	}
+
+	fclose(f);
 
 	// }}}
 
