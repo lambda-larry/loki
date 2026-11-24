@@ -3,6 +3,7 @@
 #include "qbe.h"
 
 #include <stdio.h>
+#include <inttypes.h>
 
 #define sv_c(x) (struct string){.s = x, .length = strlen(x), }
 
@@ -75,8 +76,8 @@ main(int argc, const char *argv[argc])
 	default: return 1;
 	case AST_NODE_STMT_RET:
 		 struct qbe_block block = {
-			 .label     = sv_c("start"),
-			 .jmp.kind  = QBE_JMP_KIND_RET,
+			 .label    = sv_c("start"),
+			 .jmp.kind = QBE_JMP_KIND_RET,
 		 };
 		 qbe_da_append(&func.body, block);
 		 break;
@@ -92,7 +93,11 @@ main(int argc, const char *argv[argc])
 	for (size_t i = 0; i < module.funcs.count; i++) {
 		const struct qbe_function *func = &module.funcs.data[i];
 
-		fprintf(f, "export function w $%.*s()\n", (int)func->ident.length, func->ident.s);
+		fprintf(f,
+			"export function %c $%.*s()\n",
+			func->return_type.type,
+			(int)func->ident.length, func->ident.s
+		);
 		fprintf(f, "{\n");
 		for (size_t i = 0; i < func->body.count; i++) {
 			const struct qbe_block *block = &func->body.data[i];
@@ -107,7 +112,12 @@ main(int argc, const char *argv[argc])
 			case QBE_JMP_KIND_JMP: return 2;
 			case QBE_JMP_KIND_JNZ: return 3;
 			case QBE_JMP_KIND_RET:
-				fprintf(f, "\tret 0\n");
+				if (0 == block->jmp.value.type && func->return_type.type)
+					fprintf(f, "\tret %"PRIi64"\n", block->jmp.value.constant);
+				else if (0 == block->jmp.value.type && 0 == func->return_type.type)
+					fprintf(f, "\tret\n");
+				else
+					fprintf(f, "\tret\n");
 				break;
 			case QBE_JMP_KIND_HLT: return 4;
 			}

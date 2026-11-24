@@ -211,7 +211,10 @@ enum qbe_jmp_kind
 
 struct qbe_value {
 	enum qbe_type type;
-	struct qbe_sv ident;
+	union {
+		struct qbe_sv ident;
+		i64 constant;
+	};
 };
 
 struct qbe_jmp {
