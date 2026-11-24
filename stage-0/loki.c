@@ -79,6 +79,32 @@ main(int argc, const char *argv[argc])
 			 .label    = sv_c("start"),
 			 .jmp.kind = QBE_JMP_KIND_RET,
 		 };
+
+		 {
+			 struct qbe_value val = {
+				 .kind  = QBE_VALUE_KIND_IDENT,
+				 .type  = QBE_BT_WORD,
+				 .ident = sv_c(".0"),
+			 };
+			 // TODO: Use own int parser rather than using scanf and friends
+			 i64 ret_val = 0;
+			 sscanf(ast_func->stmt[0].ret_val->literal.sv.s, "%"SCNi64, &ret_val);
+			 struct qbe_inst inst = {
+				 .kind = QBE_INST_KIND_COPY,
+				 .dst  = val,
+				 .src  = {
+					 .kind         = QBE_VALUE_KIND_DECIMAL,
+					 .type         = QBE_BT_WORD,
+					 .constant.i64 = ret_val,
+				 },
+			 };
+
+			 qbe_da_append(&block.inst, inst);
+
+			 block.jmp.value = val;
+		 }
+
+
 		 qbe_da_append(&func.body, block);
 		 break;
 	}
@@ -89,7 +115,6 @@ main(int argc, const char *argv[argc])
 
 	// {{{ emit asm
 	FILE *f = stdout;
-
 	for (size_t i = 0; i < module.funcs.count; i++) {
 		const struct qbe_function *func = &module.funcs.data[i];
 
@@ -105,7 +130,32 @@ main(int argc, const char *argv[argc])
 
 			for (size_t i = 0; i < block->inst.count; i++) {
 				const struct qbe_inst *inst = &block->inst.data[i];
-				(void)inst;
+				switch (inst->kind) {
+				case QBE_INST_KIND_ADD: return 6;
+				case QBE_INST_KIND_COPY:
+					fprintf(f, "\t%%%.*s =%c copy ",
+						(int)inst->dst.ident.length, inst->dst.ident.s,
+						(int)inst->dst.type
+					);
+					switch (inst->src.kind) {
+					case QBE_VALUE_KIND_IDENT:
+						fprintf(f, "%c%.*s",
+							inst->src.global ? '$' : '%', (int)inst->src.ident.length, inst->src.ident.s
+						);
+						break;
+					case QBE_VALUE_KIND_DECIMAL:
+						fprintf(f, "%"PRId64, inst->src.constant.i64);
+						break;
+					case QBE_VALUE_KIND_DP_FP:
+						fprintf(f, "%f", inst->src.constant.f32);
+						break;
+					case QBE_VALUE_KIND_SP_FP:
+						fprintf(f, "%lf", inst->src.constant.f64);
+						break;
+					}
+					fprintf(f, "\n");
+					break;
+				}
 			}
 
 			switch (block->jmp.kind) {
@@ -113,20 +163,36 @@ main(int argc, const char *argv[argc])
 			case QBE_JMP_KIND_JNZ: return 3;
 			case QBE_JMP_KIND_RET:
 				if (0 == block->jmp.value.type && func->return_type.type)
-					fprintf(f, "\tret %"PRIi64"\n", block->jmp.value.constant);
+					fprintf(f, "\tret %"PRIi64"\n", block->jmp.value.constant.i64);
 				else if (0 == block->jmp.value.type && 0 == func->return_type.type)
 					fprintf(f, "\tret\n");
-				else
-					fprintf(f, "\tret\n");
+				else {
+					fprintf(f, "\tret ");
+					const struct qbe_value *val = &block->jmp.value;
+					switch (val->kind) {
+					case QBE_VALUE_KIND_IDENT:
+						fprintf(f, "%c%.*s",
+							val->global ? '$' : '%', (int)val->ident.length, val->ident.s
+						);
+						break;
+					case QBE_VALUE_KIND_DECIMAL:
+						fprintf(f, "%"PRId64, val->constant.i64);
+						break;
+					case QBE_VALUE_KIND_DP_FP:
+						fprintf(f, "%f", val->constant.f32);
+						break;
+					case QBE_VALUE_KIND_SP_FP:
+						fprintf(f, "%lf", val->constant.f64);
+						break;
+					}
+					fprintf(f, "\n");
+				}
 				break;
 			case QBE_JMP_KIND_HLT: return 4;
 			}
-
 		}
 		fprintf(f, "}\n");
-
 	}
-
 	fclose(f);
 
 	// }}}

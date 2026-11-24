@@ -148,6 +148,24 @@ struct qbe_linkage {
 	struct qbe_sv section_flag;
 };
 
+enum qbe_const_kind
+{
+	QBE_CONST_KIND_NUMBER,
+	QBE_CONST_KIND_SINGLE_PRECISION_FLOAT,
+	QBE_CONST_KIND_DOUBLE_PRECISION_FLOAT,
+	QBE_CONST_KIND_IDENT,
+};
+
+struct qbe_const {
+	enum qbe_const_kind kind;
+	union {
+		struct qbe_sv ident;
+		i64 i64;
+		f32 f32;
+		f64 f64;
+	};
+};
+
 enum qbe_data_kind
 {
 	QBE_DATA_KIND_IDENT,
@@ -164,7 +182,7 @@ struct qbe_data_item {
 			i32 offset;
 		};
 		struct qbe_sv string;
-		i32 constant;
+		struct qbe_const constant;
 	};
 };
 
@@ -179,7 +197,7 @@ struct qbe_data {
 
 struct qbe_abitype {
 	enum qbe_type type;
-	struct qbe_sv ident;
+	struct qbe_sv ident; //> gdb: .type == QBE_ABI_IDENT
 };
 
 struct qbe_param {
@@ -201,20 +219,32 @@ struct qbe_function {
 	qbe_da(struct qbe_block) body;
 };
 
+enum qbe_value_kind
+{
+	QBE_VALUE_KIND_IDENT,
+	QBE_VALUE_KIND_DECIMAL,
+	QBE_VALUE_KIND_DP_FP,
+	QBE_VALUE_KIND_SP_FP,
+};
+
+struct qbe_value {
+	enum qbe_value_kind kind;
+	enum qbe_type type;
+	bool thread;
+	bool external;
+	bool global;
+	union {
+		struct qbe_const constant;
+		struct qbe_sv ident;
+	};
+};
+
 enum qbe_jmp_kind
 {
 	QBE_JMP_KIND_JMP,
 	QBE_JMP_KIND_JNZ,
 	QBE_JMP_KIND_RET,
 	QBE_JMP_KIND_HLT,
-};
-
-struct qbe_value {
-	enum qbe_type type;
-	union {
-		struct qbe_sv ident;
-		i64 constant;
-	};
 };
 
 struct qbe_jmp {
