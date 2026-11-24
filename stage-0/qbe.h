@@ -236,8 +236,17 @@ struct qbe_block {
 enum qbe_inst_kind
 {
 	QBE_INST_KIND_ADD,
+	QBE_INST_KIND_COPY,
 };
 
 struct qbe_inst {
 	enum qbe_inst_kind kind;
+	struct qbe_value dst;
+	union {
+		struct {
+			struct qbe_value lhs;
+			struct qbe_value rhs;
+		};
+		struct qbe_value src;
+	};
 };
