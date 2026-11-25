@@ -164,8 +164,27 @@ main(int argc, const char *argv[argc])
 	for (size_t i = 0; i < module.funcs.count; i++) {
 		const struct qbe_function *func = &module.funcs.data[i];
 
+		if (func->linkage.export)
+			fprintf(f, "export ");
+
+		if (func->linkage.thread)
+			fprintf(f, "thread ");
+
+		if (func->linkage.section_name.length) {
+			if (func->linkage.section_flag.length) {
+				fprintf(f, "section \"%.*s\"\n",
+					(int)func->linkage.section_name.length, func->linkage.section_name.s
+				);
+			} else {
+				fprintf(f, "section \"%.*s\" \"%.*s\"\n",
+					(int)func->linkage.section_name.length, func->linkage.section_name.s,
+					(int)func->linkage.section_flag.length, func->linkage.section_flag.s
+				);
+			}
+		}
+
 		fprintf(f,
-			"export function %c $%.*s()\n",
+			"function %c $%.*s()\n",
 			func->return_type.type,
 			(int)func->ident.length, func->ident.s
 		);
