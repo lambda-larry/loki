@@ -132,6 +132,7 @@ main(int argc, const char *argv[argc])
 				const struct qbe_inst *inst = &block->inst.data[i];
 				switch (inst->kind) {
 				case QBE_INST_KIND_ADD: return 6;
+				case QBE_INST_KIND_NEG: return 7;
 				case QBE_INST_KIND_COPY:
 					fprintf(f, "\t%%%.*s =%c copy ",
 						(int)inst->dst.ident.length, inst->dst.ident.s,

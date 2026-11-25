@@ -267,6 +267,7 @@ enum qbe_inst_kind
 {
 	QBE_INST_KIND_ADD,
 	QBE_INST_KIND_COPY,
+	QBE_INST_KIND_NEG,
 };
 
 struct qbe_inst {
