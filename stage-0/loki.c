@@ -130,27 +130,25 @@ main(int argc, const char *argv[argc])
 			 .jmp.kind = QBE_JMP_KIND_RET,
 		 };
 
-		 {
-			 struct qbe_value val = {
-				 .kind  = QBE_VALUE_KIND_IDENT,
-				 .type  = QBE_BT_WORD,
-				 .ident = sv_c(".0"),
-			 };
-			 struct qbe_inst inst = {
-				 .kind = QBE_INST_KIND_COPY,
-				 .dst  = val,
-				 .src  = {
-					 .kind         = QBE_VALUE_KIND_DECIMAL,
-					 .type         = QBE_BT_WORD,
-					 .constant.i64 = 0,
-				 },
-			 };
-			 sv_parse_i64(ast_func->stmt[0].ret_val->literal.sv, &inst.src.constant.i64);
+		 struct qbe_value val = {
+			 .kind  = QBE_VALUE_KIND_IDENT,
+			 .type  = QBE_BT_WORD,
+			 .ident = sv_c(".0"),
+		 };
+		 struct qbe_inst inst = {
+			 .kind = QBE_INST_KIND_COPY,
+			 .dst  = val,
+			 .src  = {
+				 .kind         = QBE_VALUE_KIND_DECIMAL,
+				 .type         = QBE_BT_WORD,
+				 .constant.i64 = 0,
+			 },
+		 };
+		 sv_parse_i64(ast_func->stmt[0].ret_val->literal.sv, &inst.src.constant.i64);
 
-			 qbe_da_append(&block.inst, inst);
+		 qbe_da_append(&block.inst, inst);
 
-			 block.jmp.value = val;
-		 }
+		 block.jmp.value = val;
 
 
 		 qbe_da_append(&func.body, block);
