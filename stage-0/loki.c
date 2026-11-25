@@ -148,10 +148,10 @@ main(int argc, const char *argv[argc])
 						fprintf(f, "%"PRId64, inst->src.constant.i64);
 						break;
 					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "%f", inst->src.constant.f32);
+						fprintf(f, "%"PRIf32, inst->src.constant.f32);
 						break;
 					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "%lf", inst->src.constant.f64);
+						fprintf(f, "%"PRIf64, inst->src.constant.f64);
 						break;
 					}
 					fprintf(f, "\n");
@@ -180,10 +180,10 @@ main(int argc, const char *argv[argc])
 						fprintf(f, "%"PRId64, val->constant.i64);
 						break;
 					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "%f", val->constant.f32);
+						fprintf(f, "%"PRIf32, val->constant.f32);
 						break;
 					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "%lf", val->constant.f64);
+						fprintf(f, "%"PRIf64, val->constant.f64);
 						break;
 					}
 					fprintf(f, "\n");

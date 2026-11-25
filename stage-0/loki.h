@@ -17,6 +17,9 @@ typedef int64_t i64;
 typedef float  f32;
 typedef double f64;
 
+#define PRIf32 "f"
+#define PRIf64 "lf"
+
 struct string {
 	size_t length;
 	const char *s;
