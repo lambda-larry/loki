@@ -9,6 +9,8 @@ SRC += $(STAGE_0_SRC)
 OBJ += $(STAGE_0_OBJ)
 DEP += $(STAGE_0_DEP)
 
+stage-0/loki.o: CFLAGS += -Wno-pedantic
+
 stage-0/lex.o: CFLAGS += -Wno-pedantic
 stage-0/lex.c: RE2C_FLAGS += --no-generation-date
 
