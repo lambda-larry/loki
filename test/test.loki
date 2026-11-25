@@ -1,4 +1,4 @@
 i32 main()
 {
-	return 5;
+	return 0x00'10;
 }

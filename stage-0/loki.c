@@ -7,6 +7,56 @@
 
 #define sv_c(x) (struct string){.s = x, .length = strlen(x), }
 
+static bool
+sv_parse_i64(struct string sv, i64 *ret)
+{
+	i64 val  = 0;
+	i64 base = 10;
+
+	enum
+	{
+		SEP = '\'',
+	};
+
+	const char *p = sv.s;
+	const char *e = sv.s + sv.length;
+
+	if (0 == sv.length)
+		return false;
+
+	switch (*p) {
+	default:          return false;
+	case '0' ... '0': goto parse_xxx;
+	case '1' ... '9': goto parse_hex;
+	}
+
+parse_xxx:
+
+	switch (*++p) {
+	case 'x' ... 'x': base = 16; p++; goto parse_hex;
+	case 'b' ... 'b': base = 2;  p++; goto parse_hex;
+	case 'o' ... 'o': base = 8;  p++; goto parse_hex;
+	case '0' ... '9': base = 10;      goto parse_hex;
+	case SEP ... SEP: base = 10;      goto parse_hex;
+	}
+
+parse_hex:
+	if (p == e)
+		goto done;
+
+	switch (*p) {
+	case '0' ... '9': val *= base; val += 00 + *p++ - '0'; goto parse_hex;
+	case 'a' ... 'f': val *= base; val += 10 + *p++ - 'a'; goto parse_hex;
+	case 'A' ... 'F': val *= base; val += 10 + *p++ - 'A'; goto parse_hex;
+	case SEP ... SEP: val *= 1;    val += 00 + *p++ - SEP; goto parse_hex;
+	}
+
+done:
+	*ret = val;
+
+	return true;
+}
+
 extern int
 main(int argc, const char *argv[argc])
 {
@@ -86,18 +136,16 @@ main(int argc, const char *argv[argc])
 				 .type  = QBE_BT_WORD,
 				 .ident = sv_c(".0"),
 			 };
-			 // TODO: Use own int parser rather than using scanf and friends
-			 i64 ret_val = 0;
-			 sscanf(ast_func->stmt[0].ret_val->literal.sv.s, "%"SCNi64, &ret_val);
 			 struct qbe_inst inst = {
 				 .kind = QBE_INST_KIND_COPY,
 				 .dst  = val,
 				 .src  = {
 					 .kind         = QBE_VALUE_KIND_DECIMAL,
 					 .type         = QBE_BT_WORD,
-					 .constant.i64 = ret_val,
+					 .constant.i64 = 0,
 				 },
 			 };
+			 sv_parse_i64(ast_func->stmt[0].ret_val->literal.sv, &inst.src.constant.i64);
 
 			 qbe_da_append(&block.inst, inst);
 
