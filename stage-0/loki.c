@@ -57,6 +57,30 @@ done:
 	return true;
 }
 
+
+extern void
+qbe_emit_linkage(FILE *f, struct qbe_linkage linkage)
+{
+	if (linkage.export)
+		fprintf(f, "export ");
+
+	if (linkage.thread)
+		fprintf(f, "thread ");
+
+	if (linkage.section_name.length) {
+		if (linkage.section_flag.length) {
+			fprintf(f, "section \"%.*s\"\n",
+					(int)linkage.section_name.length, linkage.section_name.s
+			       );
+		} else {
+			fprintf(f, "section \"%.*s\" \"%.*s\"\n",
+					(int)linkage.section_name.length, linkage.section_name.s,
+					(int)linkage.section_flag.length, linkage.section_flag.s
+			       );
+		}
+	}
+}
+
 extern int
 main(int argc, const char *argv[argc])
 {
@@ -164,24 +188,7 @@ main(int argc, const char *argv[argc])
 	for (size_t i = 0; i < module.funcs.count; i++) {
 		const struct qbe_function *func = &module.funcs.data[i];
 
-		if (func->linkage.export)
-			fprintf(f, "export ");
-
-		if (func->linkage.thread)
-			fprintf(f, "thread ");
-
-		if (func->linkage.section_name.length) {
-			if (func->linkage.section_flag.length) {
-				fprintf(f, "section \"%.*s\"\n",
-					(int)func->linkage.section_name.length, func->linkage.section_name.s
-				);
-			} else {
-				fprintf(f, "section \"%.*s\" \"%.*s\"\n",
-					(int)func->linkage.section_name.length, func->linkage.section_name.s,
-					(int)func->linkage.section_flag.length, func->linkage.section_flag.s
-				);
-			}
-		}
+		qbe_emit_linkage(f, func->linkage);
 
 		fprintf(f,
 			"function %c $%.*s()\n",
