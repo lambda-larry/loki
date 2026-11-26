@@ -10,6 +10,7 @@ enum token_type : int16_t
 	TT_ERR,
 	TT_LIT_NUM,
 	TT_IDENT,
+	TT_MINUS,
 	TT_LPAREN,
 	TT_RPAREN,
 	TT_LBRACE,

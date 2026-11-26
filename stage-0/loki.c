@@ -154,25 +154,36 @@ main(int argc, const char *argv[argc])
 			 .jmp.kind = QBE_JMP_KIND_RET,
 		 };
 
-		 struct qbe_value val = {
+		 struct qbe_value val_0 = {
 			 .kind         = QBE_VALUE_KIND_IDENT,
 			 .type         = QBE_BT_WORD,
 			 .ident.string = sv_c(".0"),
 		 };
-		 struct qbe_inst inst = {
+		 struct qbe_value val_1 = {
+			 .kind         = QBE_VALUE_KIND_IDENT,
+			 .type         = QBE_BT_WORD,
+			 .ident.string = sv_c(".1"),
+		 };
+		 struct qbe_inst inst_0 = {
 			 .kind = QBE_INST_KIND_COPY,
-			 .dst  = val,
+			 .dst  = val_0,
 			 .src  = {
 				 .kind         = QBE_VALUE_KIND_DECIMAL,
 				 .type         = QBE_BT_WORD,
 				 .constant.i64 = 0,
 			 },
 		 };
-		 sv_parse_i64(ast_func->stmt[0].ret_val->literal.sv, &inst.src.constant.i64);
+		 struct qbe_inst inst_1 = {
+			 .kind = QBE_INST_KIND_NEG,
+			 .dst  = val_1,
+			 .src  = val_0,
+		 };
+		 sv_parse_i64(ast_func->stmt[0].expr->expr->literal.sv, &inst_0.src.constant.i64);
 
-		 qbe_da_append(&block.inst, inst);
+		 qbe_da_append(&block.inst, inst_0);
+		 qbe_da_append(&block.inst, inst_1);
 
-		 block.jmp.value = val;
+		 block.jmp.value = val_1;
 
 
 		 qbe_da_append(&func.body, block);
@@ -204,7 +215,30 @@ main(int argc, const char *argv[argc])
 				const struct qbe_inst *inst = &block->inst.data[i];
 				switch (inst->kind) {
 				case QBE_INST_KIND_ADD: return 6;
-				case QBE_INST_KIND_NEG: return 7;
+				case QBE_INST_KIND_NEG:
+					fprintf(f, "\t%%%.*s =%c neg ",
+						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
+						(int)inst->dst.type
+					);
+					switch (inst->src.kind) {
+					case QBE_VALUE_KIND_IDENT:
+						fprintf(f, inst->src.ident.global ? "$" : "%%");
+						fprintf(f, "%.*s",
+							(int)inst->src.ident.string.length, inst->src.ident.string.s
+						);
+						break;
+					case QBE_VALUE_KIND_DECIMAL:
+						fprintf(f, "%"PRId64, inst->src.constant.i64);
+						break;
+					case QBE_VALUE_KIND_DP_FP:
+						fprintf(f, "%"PRIf32, inst->src.constant.f32);
+						break;
+					case QBE_VALUE_KIND_SP_FP:
+						fprintf(f, "%"PRIf64, inst->src.constant.f64);
+						break;
+					}
+					fprintf(f, "\n");
+					break;
 				case QBE_INST_KIND_COPY:
 					fprintf(f, "\t%%%.*s =%c copy ",
 						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,

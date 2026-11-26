@@ -55,6 +55,7 @@ enum ast_node_kind
 	AST_NODE_DECL_FUNC,
 	AST_NODE_STMT_RET,
 	AST_NODE_EXPR_LIT_NUM,
+	AST_NODE_EXPR_UN_NEG,
 };
 
 struct ast_node {
@@ -67,7 +68,7 @@ struct ast_node {
 	struct token literal;
 
 	struct ast_node *stmt;
-	struct ast_node *ret_val;
+	struct ast_node *expr;
 
 	struct ast_node *next;
 	struct ast_node *prev;

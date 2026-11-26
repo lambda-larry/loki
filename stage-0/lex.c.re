@@ -102,6 +102,7 @@ lex_start:
 
 	  [_a-zA-Z][0-9a-zA-Z_]* { return RET(TT_IDENT); }
 
+	  "-" { return RET(TT_MINUS);     }
 	  "(" { return RET(TT_LPAREN);    }
 	  ")" { return RET(TT_RPAREN);    }
 	  "{" { return RET(TT_LBRACE);    }

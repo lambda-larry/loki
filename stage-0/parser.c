@@ -23,19 +23,38 @@ static struct ast_node nodes[512];
 #define ast_node_alloc(type, ...) ((nodes[nodes_cnt] = (struct ast_node){ .kind = type, __VA_ARGS__ }), &nodes[nodes_cnt++])
 
 extern bool
-parse_expr_lit_num(struct lex *lex, struct ast_node **ret)
+parse_expr(struct lex *Lex, struct ast_node **ret)
 {
 	size_t node_chkp = nodes_cnt;
-	struct lex lexer = *lex;
-	struct ast_node *expr_lit_num = ast_node_alloc(AST_NODE_EXPR_LIT_NUM, .lex_begin = lexer);
+	struct lex lexer = *Lex;
 
-	expr_lit_num->lex_end = lexer;
+	struct lex lex_end = lexer;
 
-	if (!parse_expect(&lexer, &expr_lit_num->literal, TT_LIT_NUM, "number"))
+	struct token token = {};
+	if (!lex(&lexer, &token)) {
+		diag_error(token, "Unexpected EOF");
 		goto fail;
+	}
 
-	*lex = lexer;
-	*ret = expr_lit_num;
+	struct ast_node *expr_ret = {};
+
+	switch (token.type) {
+	case TT_LIT_NUM:
+		expr_ret = ast_node_alloc(AST_NODE_EXPR_LIT_NUM, .lex_begin = lexer);
+		expr_ret->literal = token;
+		break;
+	case TT_MINUS:
+		expr_ret = ast_node_alloc(AST_NODE_EXPR_UN_NEG,  .lex_begin = lexer);
+		if (false == parse_expr(&lexer, &expr_ret->expr))
+			goto fail;
+		break;
+	default: goto fail;
+	}
+
+	expr_ret->lex_end = lex_end;
+
+	*Lex = lexer;
+	*ret = expr_ret;
 	return true;
 
 fail:
@@ -54,7 +73,7 @@ parse_stmt_ret(struct lex *lex, struct ast_node **ret)
 	if (!parse_expect(&lexer, &(struct token){}, TT_KW_RETURN, "return"))
 		goto fail;
 
-	if (!parse_expr_lit_num(&lexer, &stmt_ret->ret_val))
+	if (!parse_expr(&lexer, &stmt_ret->expr))
 		goto fail;
 
 	stmt_ret->lex_end = lexer;
