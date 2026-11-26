@@ -76,6 +76,6 @@ struct ast_node {
 
 extern bool parse_decl_func(struct lex *lex, struct ast_node **ret);
 extern bool parse_stmt_ret(struct lex *lex, struct ast_node **ret);
-extern bool parse_expr_lit_num(struct lex *lex, struct ast_node **ret);
+extern bool parse_expr(struct lex *lex, struct ast_node **ret);
 
 #endif
