@@ -70,13 +70,13 @@ qbe_emit_linkage(FILE *f, struct qbe_linkage linkage)
 	if (linkage.section_name.length) {
 		if (linkage.section_flag.length) {
 			fprintf(f, "section \"%.*s\"\n",
-					(int)linkage.section_name.length, linkage.section_name.s
-			       );
+				(int)linkage.section_name.length, linkage.section_name.s
+		       );
 		} else {
 			fprintf(f, "section \"%.*s\" \"%.*s\"\n",
-					(int)linkage.section_name.length, linkage.section_name.s,
-					(int)linkage.section_flag.length, linkage.section_flag.s
-			       );
+				(int)linkage.section_name.length, linkage.section_name.s,
+				(int)linkage.section_flag.length, linkage.section_flag.s
+		       );
 		}
 	}
 }
