@@ -109,6 +109,11 @@ enum qbe_type
 
 };
 
+struct qbe_ident {
+	bool global;
+	struct qbe_sv string;
+};
+
 struct qbe_type_struct_item {
 	enum qbe_type type;
 	i32 number;
@@ -159,7 +164,7 @@ enum qbe_const_kind
 struct qbe_const {
 	enum qbe_const_kind kind;
 	union {
-		struct qbe_sv ident;
+		struct qbe_ident ident;
 		i64 i64;
 		f32 f32;
 		f64 f64;
@@ -232,10 +237,9 @@ struct qbe_value {
 	enum qbe_type type;
 	bool thread;
 	bool external;
-	bool global;
 	union {
 		struct qbe_const constant;
-		struct qbe_sv ident;
+		struct qbe_ident ident;
 	};
 };
 

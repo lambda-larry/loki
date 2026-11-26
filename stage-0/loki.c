@@ -155,9 +155,9 @@ main(int argc, const char *argv[argc])
 		 };
 
 		 struct qbe_value val = {
-			 .kind  = QBE_VALUE_KIND_IDENT,
-			 .type  = QBE_BT_WORD,
-			 .ident = sv_c(".0"),
+			 .kind         = QBE_VALUE_KIND_IDENT,
+			 .type         = QBE_BT_WORD,
+			 .ident.string = sv_c(".0"),
 		 };
 		 struct qbe_inst inst = {
 			 .kind = QBE_INST_KIND_COPY,
@@ -207,13 +207,14 @@ main(int argc, const char *argv[argc])
 				case QBE_INST_KIND_NEG: return 7;
 				case QBE_INST_KIND_COPY:
 					fprintf(f, "\t%%%.*s =%c copy ",
-						(int)inst->dst.ident.length, inst->dst.ident.s,
+						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
 						(int)inst->dst.type
 					);
 					switch (inst->src.kind) {
 					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, "%c%.*s",
-							inst->src.global ? '$' : '%', (int)inst->src.ident.length, inst->src.ident.s
+						fprintf(f, inst->src.ident.global ? "$" : "%%");
+						fprintf(f, "%.*s",
+							(int)inst->src.ident.string.length, inst->src.ident.string.s
 						);
 						break;
 					case QBE_VALUE_KIND_DECIMAL:
@@ -244,8 +245,9 @@ main(int argc, const char *argv[argc])
 					const struct qbe_value *val = &block->jmp.value;
 					switch (val->kind) {
 					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, "%c%.*s",
-							val->global ? '$' : '%', (int)val->ident.length, val->ident.s
+						fprintf(f, val->ident.global ? "$" : "%%");
+						fprintf(f, "%.*s",
+							(int)val->ident.string.length, val->ident.string.s
 						);
 						break;
 					case QBE_VALUE_KIND_DECIMAL:
