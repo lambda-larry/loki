@@ -270,6 +270,7 @@ struct qbe_block {
 enum qbe_inst_kind
 {
 	QBE_INST_KIND_ADD,
+	QBE_INST_KIND_MUL,
 	QBE_INST_KIND_COPY,
 	QBE_INST_KIND_NEG,
 };
