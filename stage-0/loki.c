@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-#define sv_c(x) (struct string){.s = x, .length = strlen(x), }
+#define sv_c(x) (struct string){.s = x, .length = sizeof (x) - 1, }
 
 static bool
 sv_parse_i64(struct string sv, i64 *ret)
@@ -175,34 +175,36 @@ main(int argc, const char *argv[argc])
 			 .jmp.kind = QBE_JMP_KIND_RET,
 		 };
 
-		 struct qbe_value val_0 = {
-			 .kind         = QBE_VALUE_KIND_IDENT,
-			 .type         = QBE_BT_WORD,
-			 .ident.string = sv_c(".0"),
-		 };
-		 struct qbe_value val_1 = {
-			 .kind         = QBE_VALUE_KIND_IDENT,
-			 .type         = QBE_BT_WORD,
-			 .ident.string = sv_c(".1"),
-		 };
-		 struct qbe_value val_2 = {
-			 .kind         = QBE_VALUE_KIND_IDENT,
-			 .type         = QBE_BT_WORD,
-			 .ident.string = sv_c(".2"),
-		 };
-		 struct qbe_value val_3 = {
-			 .kind         = QBE_VALUE_KIND_IDENT,
-			 .type         = QBE_BT_WORD,
-			 .ident.string = sv_c(".3"),
-		 };
-		 struct qbe_value val_4 = {
-			 .kind         = QBE_VALUE_KIND_IDENT,
-			 .type         = QBE_BT_WORD,
-			 .ident.string = sv_c(".4"),
+		 static struct qbe_value val[32] = {
+			 [0] = {
+				 .kind         = QBE_VALUE_KIND_IDENT,
+				 .type         = QBE_BT_WORD,
+				 .ident.string = sv_c(".0"),
+			 },
+			 [1] = {
+				 .kind         = QBE_VALUE_KIND_IDENT,
+				 .type         = QBE_BT_WORD,
+				 .ident.string = sv_c(".1"),
+			 },
+			 [2] = {
+				 .kind         = QBE_VALUE_KIND_IDENT,
+				 .type         = QBE_BT_WORD,
+				 .ident.string = sv_c(".2"),
+			 },
+			 [3] = {
+				 .kind         = QBE_VALUE_KIND_IDENT,
+				 .type         = QBE_BT_WORD,
+				 .ident.string = sv_c(".3"),
+			 },
+			 [4] = {
+				 .kind         = QBE_VALUE_KIND_IDENT,
+				 .type         = QBE_BT_WORD,
+				 .ident.string = sv_c(".4"),
+			 },
 		 };
 		 struct qbe_inst inst_0 = {
 			 .kind = QBE_INST_KIND_COPY,
-			 .dst  = val_0,
+			 .dst  = val[0],
 			 .src  = {
 				 .kind         = QBE_VALUE_KIND_DECIMAL,
 				 .type         = QBE_BT_WORD,
@@ -211,7 +213,7 @@ main(int argc, const char *argv[argc])
 		 };
 		 struct qbe_inst inst_1 = {
 			 .kind = QBE_INST_KIND_COPY,
-			 .dst  = val_1,
+			 .dst  = val[1],
 			 .src  = {
 				 .kind         = QBE_VALUE_KIND_DECIMAL,
 				 .type         = QBE_BT_WORD,
@@ -220,7 +222,7 @@ main(int argc, const char *argv[argc])
 		 };
 		 struct qbe_inst inst_2 = {
 			 .kind = QBE_INST_KIND_COPY,
-			 .dst  = val_2,
+			 .dst  = val[2],
 			 .src  = {
 				 .kind         = QBE_VALUE_KIND_DECIMAL,
 				 .type         = QBE_BT_WORD,
@@ -229,15 +231,15 @@ main(int argc, const char *argv[argc])
 		 };
 		 struct qbe_inst inst_3 = {
 			 .kind = QBE_INST_KIND_ADD,
-			 .dst  = val_3,
-			 .lhs  = val_0,
-			 .rhs  = val_1,
+			 .dst  = val[3],
+			 .lhs  = val[0],
+			 .rhs  = val[1],
 		 };
 		 struct qbe_inst inst_4 = {
 			 .kind = QBE_INST_KIND_MUL,
-			 .dst  = val_4,
-			 .lhs  = val_3,
-			 .rhs  = val_2,
+			 .dst  = val[4],
+			 .lhs  = val[3],
+			 .rhs  = val[2],
 		 };
 		 sv_parse_i64(ast_func->stmt[0].expr->lhs->lhs->literal.sv, &inst_0.src.constant.i64);
 		 sv_parse_i64(ast_func->stmt[0].expr->lhs->rhs->literal.sv, &inst_1.src.constant.i64);
@@ -249,7 +251,7 @@ main(int argc, const char *argv[argc])
 		 qbe_da_append(&block.inst, inst_3);
 		 qbe_da_append(&block.inst, inst_4);
 
-		 block.jmp.value = val_4;
+		 block.jmp.value = val[4];
 
 
 		 qbe_da_append(&func.body, block);
