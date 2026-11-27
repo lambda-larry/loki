@@ -243,6 +243,18 @@ struct qbe_value {
 	};
 };
 
+#define qbe_value_ident(t, id, ...) {                                                              \
+	.kind         = QBE_VALUE_KIND_IDENT,                                                      \
+	.type         = t,                                                                         \
+	.ident.string = sv_c(id),                                                                  \
+	__VA_ARGS__                                                                                \
+}
+#define qbe_value_decimal(t, value) {                                                              \
+	.kind         = QBE_VALUE_KIND_DECIMAL,                                                    \
+	.type         = t,                                                                         \
+	.constant.i64 = value,                                                                     \
+}
+
 enum qbe_jmp_kind
 {
 	QBE_JMP_KIND_JMP,

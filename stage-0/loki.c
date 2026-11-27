@@ -175,17 +175,6 @@ main(int argc, const char *argv[argc])
 			 .jmp.kind = QBE_JMP_KIND_RET,
 		 };
 
-#define qbe_value_ident(t, id) {                                                                   \
-	.kind         = QBE_VALUE_KIND_IDENT,                                                      \
-	.type         = t,                                                                         \
-	.ident.string = sv_c(id),                                                                  \
-}
-#define qbe_value_decimal(t, value) {                                                              \
-	.kind         = QBE_VALUE_KIND_DECIMAL,                                                    \
-	.type         = t,                                                                         \
-	.constant.i64 = value,                                                                     \
-}
-
 		 static struct qbe_value val[32] = {
 			 [0] = qbe_value_ident(QBE_BT_WORD, ".0"),
 			 [1] = qbe_value_ident(QBE_BT_WORD, ".1"),
