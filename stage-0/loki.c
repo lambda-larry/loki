@@ -247,10 +247,10 @@ main(int argc, const char *argv[argc])
 						fprintf(f, "%"PRId64, inst->lhs.constant.i64);
 						break;
 					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "%"PRIf32, inst->lhs.constant.f32);
+						fprintf(f, "s_%"PRIf32, inst->lhs.constant.f32);
 						break;
 					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "%"PRIf64, inst->lhs.constant.f64);
+						fprintf(f, "d_%"PRIf64, inst->lhs.constant.f64);
 						break;
 					}
 					fprintf(f, ", ");
@@ -265,10 +265,10 @@ main(int argc, const char *argv[argc])
 						fprintf(f, "%"PRId64, inst->rhs.constant.i64);
 						break;
 					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "%"PRIf32, inst->rhs.constant.f32);
+						fprintf(f, "s_%"PRIf32, inst->rhs.constant.f32);
 						break;
 					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "%"PRIf64, inst->rhs.constant.f64);
+						fprintf(f, "d_%"PRIf64, inst->rhs.constant.f64);
 						break;
 					}
 					fprintf(f, "\n");
@@ -290,10 +290,10 @@ main(int argc, const char *argv[argc])
 						fprintf(f, "%"PRId64, inst->src.constant.i64);
 						break;
 					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "%"PRIf32, inst->src.constant.f32);
+						fprintf(f, "s_%"PRIf32, inst->src.constant.f32);
 						break;
 					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "%"PRIf64, inst->src.constant.f64);
+						fprintf(f, "d_%"PRIf64, inst->src.constant.f64);
 						break;
 					}
 					fprintf(f, "\n");
@@ -314,10 +314,10 @@ main(int argc, const char *argv[argc])
 						fprintf(f, "%"PRId64, inst->src.constant.i64);
 						break;
 					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "%"PRIf32, inst->src.constant.f32);
+						fprintf(f, "s_%"PRIf32, inst->src.constant.f32);
 						break;
 					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "%"PRIf64, inst->src.constant.f64);
+						fprintf(f, "d_%"PRIf64, inst->src.constant.f64);
 						break;
 					}
 					fprintf(f, "\n");
@@ -347,10 +347,10 @@ main(int argc, const char *argv[argc])
 						fprintf(f, "%"PRId64, val->constant.i64);
 						break;
 					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "%"PRIf32, val->constant.f32);
+						fprintf(f, "s_%"PRIf32, val->constant.f32);
 						break;
 					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "%"PRIf64, val->constant.f64);
+						fprintf(f, "d_%"PRIf64, val->constant.f64);
 						break;
 					}
 					fprintf(f, "\n");
