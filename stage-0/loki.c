@@ -80,6 +80,28 @@ qbe_emit_linkage(FILE *f, struct qbe_linkage linkage)
 	}
 }
 
+extern void
+qbe_emit_value(FILE *f, struct qbe_value value)
+{
+	switch (value.kind) {
+	case QBE_VALUE_KIND_IDENT:
+		fprintf(f, value.ident.global ? "$" : "%%");
+		fprintf(f, "%.*s",
+			(int)value.ident.string.length, value.ident.string.s
+		);
+		break;
+	case QBE_VALUE_KIND_DECIMAL:
+		fprintf(f, "%"PRId64,   value.constant.i64);
+		break;
+	case QBE_VALUE_KIND_DP_FP:
+		fprintf(f, "s_%"PRIf32, value.constant.f32);
+		break;
+	case QBE_VALUE_KIND_SP_FP:
+		fprintf(f, "d_%"PRIf64, value.constant.f64);
+		break;
+	}
+}
+
 extern int
 main(int argc, const char *argv[argc])
 {
@@ -263,41 +285,9 @@ main(int argc, const char *argv[argc])
 						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
 						(int)inst->dst.type
 					);
-					switch (inst->lhs.kind) {
-					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, inst->lhs.ident.global ? "$" : "%%");
-						fprintf(f, "%.*s",
-							(int)inst->lhs.ident.string.length, inst->lhs.ident.string.s
-						);
-						break;
-					case QBE_VALUE_KIND_DECIMAL:
-						fprintf(f, "%"PRId64, inst->lhs.constant.i64);
-						break;
-					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "s_%"PRIf32, inst->lhs.constant.f32);
-						break;
-					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "d_%"PRIf64, inst->lhs.constant.f64);
-						break;
-					}
+					qbe_emit_value(f, inst->lhs);
 					fprintf(f, ", ");
-					switch (inst->rhs.kind) {
-					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, inst->rhs.ident.global ? "$" : "%%");
-						fprintf(f, "%.*s",
-							(int)inst->rhs.ident.string.length, inst->rhs.ident.string.s
-						);
-						break;
-					case QBE_VALUE_KIND_DECIMAL:
-						fprintf(f, "%"PRId64, inst->rhs.constant.i64);
-						break;
-					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "s_%"PRIf32, inst->rhs.constant.f32);
-						break;
-					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "d_%"PRIf64, inst->rhs.constant.f64);
-						break;
-					}
+					qbe_emit_value(f, inst->rhs);
 					fprintf(f, "\n");
 
 					break;
@@ -306,41 +296,9 @@ main(int argc, const char *argv[argc])
 						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
 						(int)inst->dst.type
 					);
-					switch (inst->lhs.kind) {
-					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, inst->lhs.ident.global ? "$" : "%%");
-						fprintf(f, "%.*s",
-							(int)inst->lhs.ident.string.length, inst->lhs.ident.string.s
-						);
-						break;
-					case QBE_VALUE_KIND_DECIMAL:
-						fprintf(f, "%"PRId64, inst->lhs.constant.i64);
-						break;
-					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "s_%"PRIf32, inst->lhs.constant.f32);
-						break;
-					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "d_%"PRIf64, inst->lhs.constant.f64);
-						break;
-					}
+					qbe_emit_value(f, inst->lhs);
 					fprintf(f, ", ");
-					switch (inst->rhs.kind) {
-					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, inst->rhs.ident.global ? "$" : "%%");
-						fprintf(f, "%.*s",
-							(int)inst->rhs.ident.string.length, inst->rhs.ident.string.s
-						);
-						break;
-					case QBE_VALUE_KIND_DECIMAL:
-						fprintf(f, "%"PRId64, inst->rhs.constant.i64);
-						break;
-					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "s_%"PRIf32, inst->rhs.constant.f32);
-						break;
-					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "d_%"PRIf64, inst->rhs.constant.f64);
-						break;
-					}
+					qbe_emit_value(f, inst->rhs);
 					fprintf(f, "\n");
 
 					break;
@@ -349,23 +307,7 @@ main(int argc, const char *argv[argc])
 						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
 						(int)inst->dst.type
 					);
-					switch (inst->src.kind) {
-					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, inst->src.ident.global ? "$" : "%%");
-						fprintf(f, "%.*s",
-							(int)inst->src.ident.string.length, inst->src.ident.string.s
-						);
-						break;
-					case QBE_VALUE_KIND_DECIMAL:
-						fprintf(f, "%"PRId64, inst->src.constant.i64);
-						break;
-					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "s_%"PRIf32, inst->src.constant.f32);
-						break;
-					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "d_%"PRIf64, inst->src.constant.f64);
-						break;
-					}
+					qbe_emit_value(f, inst->src);
 					fprintf(f, "\n");
 					break;
 				case QBE_INST_KIND_COPY:
@@ -373,23 +315,7 @@ main(int argc, const char *argv[argc])
 						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
 						(int)inst->dst.type
 					);
-					switch (inst->src.kind) {
-					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, inst->src.ident.global ? "$" : "%%");
-						fprintf(f, "%.*s",
-							(int)inst->src.ident.string.length, inst->src.ident.string.s
-						);
-						break;
-					case QBE_VALUE_KIND_DECIMAL:
-						fprintf(f, "%"PRId64, inst->src.constant.i64);
-						break;
-					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "s_%"PRIf32, inst->src.constant.f32);
-						break;
-					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "d_%"PRIf64, inst->src.constant.f64);
-						break;
-					}
+					qbe_emit_value(f, inst->src);
 					fprintf(f, "\n");
 					break;
 				}
@@ -405,24 +331,7 @@ main(int argc, const char *argv[argc])
 					fprintf(f, "\tret\n");
 				else {
 					fprintf(f, "\tret ");
-					const struct qbe_value *val = &block->jmp.value;
-					switch (val->kind) {
-					case QBE_VALUE_KIND_IDENT:
-						fprintf(f, val->ident.global ? "$" : "%%");
-						fprintf(f, "%.*s",
-							(int)val->ident.string.length, val->ident.string.s
-						);
-						break;
-					case QBE_VALUE_KIND_DECIMAL:
-						fprintf(f, "%"PRId64, val->constant.i64);
-						break;
-					case QBE_VALUE_KIND_DP_FP:
-						fprintf(f, "s_%"PRIf32, val->constant.f32);
-						break;
-					case QBE_VALUE_KIND_SP_FP:
-						fprintf(f, "d_%"PRIf64, val->constant.f64);
-						break;
-					}
+					qbe_emit_value(f, block->jmp.value);
 					fprintf(f, "\n");
 				}
 				break;
