@@ -281,6 +281,7 @@ struct qbe_block {
 
 enum qbe_inst_kind
 {
+	QBE_INST_KIND_COMMENT,
 	QBE_INST_KIND_ADD,
 	QBE_INST_KIND_MUL,
 	QBE_INST_KIND_COPY,
@@ -289,7 +290,10 @@ enum qbe_inst_kind
 
 struct qbe_inst {
 	enum qbe_inst_kind kind;
-	struct qbe_value dst;
+	union {
+		struct qbe_value dst;
+		struct qbe_sv comment;
+	};
 	union {
 		struct {
 			struct qbe_value lhs;

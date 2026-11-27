@@ -250,6 +250,12 @@ main(int argc, const char *argv[argc])
 			for (size_t i = 0; i < block->inst.count; i++) {
 				const struct qbe_inst *inst = &block->inst.data[i];
 				switch (inst->kind) {
+				case QBE_INST_KIND_COMMENT:
+					if (0 == inst->comment.length)
+						break;
+
+					fprintf(f, "\t# %.*s\n", (int)inst->comment.length, inst->comment.s);
+					break;
 				case QBE_INST_KIND_ADD:
 					fprintf(f, "\t%%%.*s =%c add ",
 						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
