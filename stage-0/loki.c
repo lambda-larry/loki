@@ -164,6 +164,11 @@ main(int argc, const char *argv[argc])
 			 .type         = QBE_BT_WORD,
 			 .ident.string = sv_c(".1"),
 		 };
+		 struct qbe_value val_2 = {
+			 .kind         = QBE_VALUE_KIND_IDENT,
+			 .type         = QBE_BT_WORD,
+			 .ident.string = sv_c(".2"),
+		 };
 		 struct qbe_inst inst_0 = {
 			 .kind = QBE_INST_KIND_COPY,
 			 .dst  = val_0,
@@ -174,16 +179,28 @@ main(int argc, const char *argv[argc])
 			 },
 		 };
 		 struct qbe_inst inst_1 = {
-			 .kind = QBE_INST_KIND_NEG,
+			 .kind = QBE_INST_KIND_COPY,
 			 .dst  = val_1,
-			 .src  = val_0,
+			 .src  = {
+				 .kind         = QBE_VALUE_KIND_DECIMAL,
+				 .type         = QBE_BT_WORD,
+				 .constant.i64 = 0,
+			 },
 		 };
-		 sv_parse_i64(ast_func->stmt[0].expr->expr->literal.sv, &inst_0.src.constant.i64);
+		 struct qbe_inst inst_2 = {
+			 .kind = QBE_INST_KIND_ADD,
+			 .dst  = val_2,
+			 .lhs  = val_0,
+			 .rhs  = val_1,
+		 };
+		 sv_parse_i64(ast_func->stmt[0].expr->lhs->literal.sv, &inst_0.src.constant.i64);
+		 sv_parse_i64(ast_func->stmt[0].expr->rhs->literal.sv, &inst_1.src.constant.i64);
 
 		 qbe_da_append(&block.inst, inst_0);
 		 qbe_da_append(&block.inst, inst_1);
+		 qbe_da_append(&block.inst, inst_2);
 
-		 block.jmp.value = val_1;
+		 block.jmp.value = val_2;
 
 
 		 qbe_da_append(&func.body, block);
@@ -214,7 +231,49 @@ main(int argc, const char *argv[argc])
 			for (size_t i = 0; i < block->inst.count; i++) {
 				const struct qbe_inst *inst = &block->inst.data[i];
 				switch (inst->kind) {
-				case QBE_INST_KIND_ADD: return 6;
+				case QBE_INST_KIND_ADD:
+					fprintf(f, "\t%%%.*s =%c add ",
+						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
+						(int)inst->dst.type
+					);
+					switch (inst->lhs.kind) {
+					case QBE_VALUE_KIND_IDENT:
+						fprintf(f, inst->lhs.ident.global ? "$" : "%%");
+						fprintf(f, "%.*s",
+							(int)inst->lhs.ident.string.length, inst->lhs.ident.string.s
+						);
+						break;
+					case QBE_VALUE_KIND_DECIMAL:
+						fprintf(f, "%"PRId64, inst->lhs.constant.i64);
+						break;
+					case QBE_VALUE_KIND_DP_FP:
+						fprintf(f, "%"PRIf32, inst->lhs.constant.f32);
+						break;
+					case QBE_VALUE_KIND_SP_FP:
+						fprintf(f, "%"PRIf64, inst->lhs.constant.f64);
+						break;
+					}
+					fprintf(f, ", ");
+					switch (inst->rhs.kind) {
+					case QBE_VALUE_KIND_IDENT:
+						fprintf(f, inst->rhs.ident.global ? "$" : "%%");
+						fprintf(f, "%.*s",
+							(int)inst->rhs.ident.string.length, inst->rhs.ident.string.s
+						);
+						break;
+					case QBE_VALUE_KIND_DECIMAL:
+						fprintf(f, "%"PRId64, inst->rhs.constant.i64);
+						break;
+					case QBE_VALUE_KIND_DP_FP:
+						fprintf(f, "%"PRIf32, inst->rhs.constant.f32);
+						break;
+					case QBE_VALUE_KIND_SP_FP:
+						fprintf(f, "%"PRIf64, inst->rhs.constant.f64);
+						break;
+					}
+					fprintf(f, "\n");
+
+					break;
 				case QBE_INST_KIND_NEG:
 					fprintf(f, "\t%%%.*s =%c neg ",
 						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,

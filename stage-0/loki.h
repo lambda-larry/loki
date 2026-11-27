@@ -56,6 +56,8 @@ enum ast_node_kind
 	AST_NODE_STMT_RET,
 	AST_NODE_EXPR_LIT_NUM,
 	AST_NODE_EXPR_UN_NEG,
+	AST_NODE_EXPR_BIN_ADD,
+	AST_NODE_LAST,
 };
 
 struct ast_node {
@@ -70,12 +72,15 @@ struct ast_node {
 	struct ast_node *stmt;
 	struct ast_node *expr;
 
+	struct ast_node *lhs;
+	struct ast_node *rhs;
+
 	struct ast_node *next;
 	struct ast_node *prev;
 };
 
 extern bool parse_decl_func(struct lex *lex, struct ast_node **ret);
 extern bool parse_stmt_ret(struct lex *lex, struct ast_node **ret);
-extern bool parse_expr(struct lex *lex, struct ast_node **ret);
+extern bool parse_expr(struct lex *lex, int precedence, struct ast_node **ret);
 
 #endif

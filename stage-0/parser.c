@@ -2,6 +2,18 @@
 #include "lex.h"
 
 static bool
+parse_peek(struct lex lexer, struct token *token)
+{
+	return lex(&lexer, token);
+}
+
+static bool
+parse_advance(struct lex *lexer)
+{
+	return lex(lexer, &(struct token){});
+}
+
+static bool
 parse_expect(struct lex *lexer, struct token *token, enum token_type type, const char *expect)
 {
 	if (!lex(lexer, token)) {
@@ -22,8 +34,10 @@ static struct ast_node nodes[512];
 
 #define ast_node_alloc(type, ...) ((nodes[nodes_cnt] = (struct ast_node){ .kind = type, __VA_ARGS__ }), &nodes[nodes_cnt++])
 
+extern bool parse_expr(struct lex *Lex, int precedence, struct ast_node **ret);
+
 extern bool
-parse_expr(struct lex *Lex, struct ast_node **ret)
+parse_expr_factor(struct lex *Lex, struct ast_node **ret)
 {
 	size_t node_chkp = nodes_cnt;
 	struct lex lexer = *Lex;
@@ -43,9 +57,13 @@ parse_expr(struct lex *Lex, struct ast_node **ret)
 		expr_ret = ast_node_alloc(AST_NODE_EXPR_LIT_NUM, .lex_begin = lexer);
 		expr_ret->literal = token;
 		break;
+	case TT_PLUS:
+		if (false == parse_expr_factor(&lexer, &expr_ret))
+			goto fail;
+		break;
 	case TT_MINUS:
 		expr_ret = ast_node_alloc(AST_NODE_EXPR_UN_NEG,  .lex_begin = lexer);
-		if (false == parse_expr(&lexer, &expr_ret->expr))
+		if (false == parse_expr(&lexer, 0, &expr_ret->expr))
 			goto fail;
 		break;
 	default: goto fail;
@@ -64,6 +82,51 @@ fail:
 }
 
 extern bool
+parse_expr(struct lex *Lex, int precedence, struct ast_node **ret)
+{
+	size_t node_chkp = nodes_cnt;
+	struct lex lexer = *Lex;
+
+	struct lex lex_end = lexer;
+
+	struct ast_node *lhs_expr = {};
+	if (false == parse_expr_factor(&lexer, &lhs_expr))
+		goto fail;
+
+	static const bool is_op_bin[TT_LAST] = {
+		[TT_PLUS] = true,
+	};
+
+	static const int op_prec[TT_LAST] = {
+		[TT_PLUS] = 10,
+	};
+
+	struct token token = {};
+	parse_peek(lexer, &token);
+	while (parse_peek(lexer, &token) && is_op_bin[token.type] && op_prec[token.type] > precedence) {
+		static const enum ast_node_kind tok_to_ast[TT_LAST] = {
+			[TT_PLUS] = AST_NODE_EXPR_BIN_ADD,
+		};
+		lhs_expr = ast_node_alloc(tok_to_ast[token.type], .lex_begin = lexer, .lhs = lhs_expr);
+
+		parse_advance(&lexer);
+		if (!parse_expr(&lexer, op_prec[token.type], &lhs_expr->rhs))
+			break;
+	}
+
+	lhs_expr->lex_end = lex_end;
+
+	*Lex = lexer;
+	*ret = lhs_expr;
+	return true;
+
+fail:
+	nodes_cnt = node_chkp;
+	*ret = nullptr;
+	return false;
+}
+
+extern bool
 parse_stmt_ret(struct lex *lex, struct ast_node **ret)
 {
 	size_t node_chkp = nodes_cnt;
@@ -73,7 +136,7 @@ parse_stmt_ret(struct lex *lex, struct ast_node **ret)
 	if (!parse_expect(&lexer, &(struct token){}, TT_KW_RETURN, "return"))
 		goto fail;
 
-	if (!parse_expr(&lexer, &stmt_ret->expr))
+	if (!parse_expr(&lexer, 0, &stmt_ret->expr))
 		goto fail;
 
 	stmt_ret->lex_end = lexer;

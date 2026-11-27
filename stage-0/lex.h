@@ -10,6 +10,7 @@ enum token_type : int16_t
 	TT_ERR,
 	TT_LIT_NUM,
 	TT_IDENT,
+	TT_PLUS,
 	TT_MINUS,
 	TT_LPAREN,
 	TT_RPAREN,
@@ -17,6 +18,7 @@ enum token_type : int16_t
 	TT_RBRACE,
 	TT_SEMICOLON,
 	TT_KW_RETURN,
+	TT_LAST,
 };
 
 #ifndef lex_sv
