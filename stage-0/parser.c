@@ -34,34 +34,42 @@ static struct ast_node nodes[512];
 
 #define ast_node_alloc(type, ...) ((nodes[nodes_cnt] = (struct ast_node){ .kind = type, __VA_ARGS__ }), &nodes[nodes_cnt++])
 
-extern bool parse_expr(struct lex *Lex, int precedence, struct ast_node **ret);
+extern bool parse_expr(struct lex *lex, int precedence, struct ast_node **ret);
 
 extern bool
-parse_expr_factor(struct lex *Lex, struct ast_node **ret)
+parse_expr_factor(struct lex *lex, struct ast_node **ret)
 {
 	size_t node_chkp = nodes_cnt;
-	struct lex lexer = *Lex;
+	struct lex lexer = *lex;
 
 	struct lex lex_end = lexer;
 
-	struct token token = {};
-	if (!lex(&lexer, &token)) {
-		diag_error(token, "Unexpected EOF");
-		goto fail;
-	}
-
 	struct ast_node *expr_ret = {};
 
+	struct token token = {};
+	if (!parse_peek(lexer, &token))
+		goto fail;
+
 	switch (token.type) {
+	case TT_LPAREN:
+		parse_advance(&lexer);
+		if (false == parse_expr(&lexer, 0, &expr_ret))
+			goto fail;
+		if (!parse_expect(&lexer, &(struct token){}, TT_RPAREN, ")"))
+			goto fail;
+		break;
 	case TT_LIT_NUM:
+		parse_advance(&lexer);
 		expr_ret = ast_node_alloc(AST_NODE_EXPR_LIT_NUM, .lex_begin = lexer);
 		expr_ret->literal = token;
 		break;
 	case TT_PLUS:
+		parse_advance(&lexer);
 		if (false == parse_expr_factor(&lexer, &expr_ret))
 			goto fail;
 		break;
 	case TT_MINUS:
+		parse_advance(&lexer);
 		expr_ret = ast_node_alloc(AST_NODE_EXPR_UN_NEG,  .lex_begin = lexer);
 		if (false == parse_expr(&lexer, 0, &expr_ret->expr))
 			goto fail;
@@ -71,7 +79,7 @@ parse_expr_factor(struct lex *Lex, struct ast_node **ret)
 
 	expr_ret->lex_end = lex_end;
 
-	*Lex = lexer;
+	*lex = lexer;
 	*ret = expr_ret;
 	return true;
 
@@ -82,10 +90,10 @@ fail:
 }
 
 extern bool
-parse_expr(struct lex *Lex, int precedence, struct ast_node **ret)
+parse_expr(struct lex *lex, int precedence, struct ast_node **ret)
 {
 	size_t node_chkp = nodes_cnt;
-	struct lex lexer = *Lex;
+	struct lex lexer = *lex;
 
 	struct lex lex_end = lexer;
 
@@ -103,7 +111,7 @@ parse_expr(struct lex *Lex, int precedence, struct ast_node **ret)
 
 	struct token token = {};
 	parse_peek(lexer, &token);
-	while (parse_peek(lexer, &token) && is_op_bin[token.type] && op_prec[token.type] > precedence) {
+	while (parse_peek(lexer, &token) && is_op_bin[token.type] && op_prec[token.type] >= precedence) {
 		static const enum ast_node_kind tok_to_ast[TT_LAST] = {
 			[TT_PLUS] = AST_NODE_EXPR_BIN_ADD,
 		};
@@ -116,7 +124,7 @@ parse_expr(struct lex *Lex, int precedence, struct ast_node **ret)
 
 	lhs_expr->lex_end = lex_end;
 
-	*Lex = lexer;
+	*lex = lexer;
 	*ret = lhs_expr;
 	return true;
 
