@@ -175,59 +175,38 @@ main(int argc, const char *argv[argc])
 			 .jmp.kind = QBE_JMP_KIND_RET,
 		 };
 
+#define qbe_value_ident(t, id) {                                                                   \
+	.kind         = QBE_VALUE_KIND_IDENT,                                                      \
+	.type         = t,                                                                         \
+	.ident.string = sv_c(id),                                                                  \
+}
+#define qbe_value_decimal(t, value) {                                                              \
+	.kind         = QBE_VALUE_KIND_DECIMAL,                                                    \
+	.type         = t,                                                                         \
+	.constant.i64 = value,                                                                     \
+}
+
 		 static struct qbe_value val[32] = {
-			 [0] = {
-				 .kind         = QBE_VALUE_KIND_IDENT,
-				 .type         = QBE_BT_WORD,
-				 .ident.string = sv_c(".0"),
-			 },
-			 [1] = {
-				 .kind         = QBE_VALUE_KIND_IDENT,
-				 .type         = QBE_BT_WORD,
-				 .ident.string = sv_c(".1"),
-			 },
-			 [2] = {
-				 .kind         = QBE_VALUE_KIND_IDENT,
-				 .type         = QBE_BT_WORD,
-				 .ident.string = sv_c(".2"),
-			 },
-			 [3] = {
-				 .kind         = QBE_VALUE_KIND_IDENT,
-				 .type         = QBE_BT_WORD,
-				 .ident.string = sv_c(".3"),
-			 },
-			 [4] = {
-				 .kind         = QBE_VALUE_KIND_IDENT,
-				 .type         = QBE_BT_WORD,
-				 .ident.string = sv_c(".4"),
-			 },
+			 [0] = qbe_value_ident(QBE_BT_WORD, ".0"),
+			 [1] = qbe_value_ident(QBE_BT_WORD, ".1"),
+			 [2] = qbe_value_ident(QBE_BT_WORD, ".2"),
+			 [3] = qbe_value_ident(QBE_BT_WORD, ".3"),
+			 [4] = qbe_value_ident(QBE_BT_WORD, ".4"),
 		 };
 		 struct qbe_inst inst_0 = {
 			 .kind = QBE_INST_KIND_COPY,
 			 .dst  = val[0],
-			 .src  = {
-				 .kind         = QBE_VALUE_KIND_DECIMAL,
-				 .type         = QBE_BT_WORD,
-				 .constant.i64 = 0,
-			 },
+			 .src  = qbe_value_decimal(QBE_BT_WORD, 0),
 		 };
 		 struct qbe_inst inst_1 = {
 			 .kind = QBE_INST_KIND_COPY,
 			 .dst  = val[1],
-			 .src  = {
-				 .kind         = QBE_VALUE_KIND_DECIMAL,
-				 .type         = QBE_BT_WORD,
-				 .constant.i64 = 0,
-			 },
+			 .src  = qbe_value_decimal(QBE_BT_WORD, 0),
 		 };
 		 struct qbe_inst inst_2 = {
 			 .kind = QBE_INST_KIND_COPY,
 			 .dst  = val[2],
-			 .src  = {
-				 .kind         = QBE_VALUE_KIND_DECIMAL,
-				 .type         = QBE_BT_WORD,
-				 .constant.i64 = 0,
-			 },
+			 .src  = qbe_value_decimal(QBE_BT_WORD, 0),
 		 };
 		 struct qbe_inst inst_3 = {
 			 .kind = QBE_INST_KIND_ADD,
