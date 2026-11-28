@@ -187,8 +187,11 @@ parse_decl_func(struct lex *lex, struct ast_node **ret)
 	if (!parse_expect(&lexer, &(struct token){}, TT_RPAREN, ")")) goto fail;
 	if (!parse_expect(&lexer, &(struct token){}, TT_LBRACE, "{")) goto fail;
 
-	if (!parse_stmt_ret(&lexer, &decl_func->stmt))
-		goto fail;
+
+	struct ast_node **stmt_head = &decl_func->stmt;
+	for (struct token token; parse_peek(lexer, &token) && TT_RBRACE != token.type; stmt_head = &(*stmt_head)->next)
+		if (!parse_stmt_ret(&lexer, stmt_head))
+			goto fail;
 
 	decl_func->lex_end = lexer;
 	if (!parse_expect(&lexer, &(struct token){}, TT_RBRACE, "}"))
