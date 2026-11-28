@@ -257,10 +257,9 @@ main(int argc, const char *argv[argc])
 					fprintf(f, "\t# %.*s\n", (int)inst->comment.length, inst->comment.s);
 					break;
 				case QBE_INST_KIND_ADD:
-					fprintf(f, "\t%%%.*s =%c add ",
-						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
-						(int)inst->dst.type
-					);
+					fprintf(f, "\t");
+					qbe_emit_value(f, inst->dst);
+					fprintf(f, " =%c add ", (int)inst->dst.type);
 					qbe_emit_value(f, inst->lhs);
 					fprintf(f, ", ");
 					qbe_emit_value(f, inst->rhs);
@@ -268,10 +267,9 @@ main(int argc, const char *argv[argc])
 
 					break;
 				case QBE_INST_KIND_MUL:
-					fprintf(f, "\t%%%.*s =%c mul ",
-						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
-						(int)inst->dst.type
-					);
+					fprintf(f, "\t");
+					qbe_emit_value(f, inst->dst);
+					fprintf(f, " =%c mul ", (int)inst->dst.type);
 					qbe_emit_value(f, inst->lhs);
 					fprintf(f, ", ");
 					qbe_emit_value(f, inst->rhs);
@@ -279,18 +277,16 @@ main(int argc, const char *argv[argc])
 
 					break;
 				case QBE_INST_KIND_NEG:
-					fprintf(f, "\t%%%.*s =%c neg ",
-						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
-						(int)inst->dst.type
-					);
+					fprintf(f, "\t");
+					qbe_emit_value(f, inst->dst);
+					fprintf(f, " =%c neg ", (int)inst->dst.type);
 					qbe_emit_value(f, inst->src);
 					fprintf(f, "\n");
 					break;
 				case QBE_INST_KIND_COPY:
-					fprintf(f, "\t%%%.*s =%c copy ",
-						(int)inst->dst.ident.string.length, inst->dst.ident.string.s,
-						(int)inst->dst.type
-					);
+					fprintf(f, "\t");
+					qbe_emit_value(f, inst->dst);
+					fprintf(f, " =%c copy ", (int)inst->dst.type);
 					qbe_emit_value(f, inst->src);
 					fprintf(f, "\n");
 					break;
