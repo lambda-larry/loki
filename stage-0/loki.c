@@ -81,14 +81,23 @@ qbe_emit_linkage(FILE *f, struct qbe_linkage linkage)
 }
 
 extern void
+qbe_emit_ident(FILE *f, struct qbe_ident identifier)
+{
+	fprintf(f, identifier.global ? "$" : "%%");
+	if (identifier.prefix.length) {
+		fprintf(f, "%.*s",
+			(int)identifier.prefix.length, identifier.prefix.s
+		);
+	}
+	fprintf(f, ".%"PRIu32, identifier.id);
+}
+
+extern void
 qbe_emit_value(FILE *f, struct qbe_value value)
 {
 	switch (value.kind) {
 	case QBE_VALUE_KIND_IDENT:
-		fprintf(f, value.ident.global ? "$" : "%%");
-		fprintf(f, "%.*s",
-			(int)value.ident.string.length, value.ident.string.s
-		);
+		qbe_emit_ident(f, value.ident);
 		break;
 	case QBE_VALUE_KIND_DECIMAL:
 		fprintf(f, "%"PRId64,   value.constant.i64);
@@ -167,64 +176,63 @@ main(int argc, const char *argv[argc])
 		.return_type.type = QBE_ABI_WORD,
 	};
 
+	 struct qbe_block block = {
+		 .label    = sv_c("start"),
+		 .jmp.kind = QBE_JMP_KIND_RET,
+	 };
 	switch (ast_func->stmt[0].kind) {
-	default: return 1;
 	case AST_NODE_STMT_RET:
-		 struct qbe_block block = {
-			 .label    = sv_c("start"),
-			 .jmp.kind = QBE_JMP_KIND_RET,
-		 };
+		static struct qbe_value val[32] = {
+		        [0] = qbe_value_ident_id(QBE_BT_WORD, 0),
+		        [1] = qbe_value_ident_id(QBE_BT_WORD, 1),
+		        [2] = qbe_value_ident_id(QBE_BT_WORD, 2),
+		        [3] = qbe_value_ident_id(QBE_BT_WORD, 3),
+		        [4] = qbe_value_ident_id(QBE_BT_WORD, 4),
+		};
+		struct qbe_inst inst_0 = {
+		        .kind = QBE_INST_KIND_COPY,
+		        .dst  = val[0],
+		        .src  = qbe_value_decimal(QBE_BT_WORD, 0),
+		};
+		struct qbe_inst inst_1 = {
+		        .kind = QBE_INST_KIND_COPY,
+		        .dst  = val[1],
+		        .src  = qbe_value_decimal(QBE_BT_WORD, 0),
+		};
+		struct qbe_inst inst_2 = {
+		        .kind = QBE_INST_KIND_COPY,
+		        .dst  = val[2],
+		        .src  = qbe_value_decimal(QBE_BT_WORD, 0),
+		};
+		struct qbe_inst inst_3 = {
+		        .kind = QBE_INST_KIND_ADD,
+		        .dst  = val[3],
+		        .lhs  = val[0],
+		        .rhs  = val[1],
+		};
+		struct qbe_inst inst_4 = {
+		        .kind = QBE_INST_KIND_MUL,
+		        .dst  = val[4],
+		        .lhs  = val[3],
+		        .rhs  = val[2],
+		};
+		sv_parse_i64(ast_func->stmt[0].expr->lhs->lhs->literal.sv, &inst_0.src.constant.i64);
+		sv_parse_i64(ast_func->stmt[0].expr->lhs->rhs->literal.sv, &inst_1.src.constant.i64);
+		sv_parse_i64(ast_func->stmt[0].expr->rhs->literal.sv,      &inst_2.src.constant.i64);
 
-		 static struct qbe_value val[32] = {
-			 [0] = qbe_value_ident(QBE_BT_WORD, ".0"),
-			 [1] = qbe_value_ident(QBE_BT_WORD, ".1"),
-			 [2] = qbe_value_ident(QBE_BT_WORD, ".2"),
-			 [3] = qbe_value_ident(QBE_BT_WORD, ".3"),
-			 [4] = qbe_value_ident(QBE_BT_WORD, ".4"),
-		 };
-		 struct qbe_inst inst_0 = {
-			 .kind = QBE_INST_KIND_COPY,
-			 .dst  = val[0],
-			 .src  = qbe_value_decimal(QBE_BT_WORD, 0),
-		 };
-		 struct qbe_inst inst_1 = {
-			 .kind = QBE_INST_KIND_COPY,
-			 .dst  = val[1],
-			 .src  = qbe_value_decimal(QBE_BT_WORD, 0),
-		 };
-		 struct qbe_inst inst_2 = {
-			 .kind = QBE_INST_KIND_COPY,
-			 .dst  = val[2],
-			 .src  = qbe_value_decimal(QBE_BT_WORD, 0),
-		 };
-		 struct qbe_inst inst_3 = {
-			 .kind = QBE_INST_KIND_ADD,
-			 .dst  = val[3],
-			 .lhs  = val[0],
-			 .rhs  = val[1],
-		 };
-		 struct qbe_inst inst_4 = {
-			 .kind = QBE_INST_KIND_MUL,
-			 .dst  = val[4],
-			 .lhs  = val[3],
-			 .rhs  = val[2],
-		 };
-		 sv_parse_i64(ast_func->stmt[0].expr->lhs->lhs->literal.sv, &inst_0.src.constant.i64);
-		 sv_parse_i64(ast_func->stmt[0].expr->lhs->rhs->literal.sv, &inst_1.src.constant.i64);
-		 sv_parse_i64(ast_func->stmt[0].expr->rhs->literal.sv,      &inst_2.src.constant.i64);
+		qbe_da_append(&block.inst, inst_0);
+		qbe_da_append(&block.inst, inst_1);
+		qbe_da_append(&block.inst, inst_2);
+		qbe_da_append(&block.inst, inst_3);
+		qbe_da_append(&block.inst, inst_4);
 
-		 qbe_da_append(&block.inst, inst_0);
-		 qbe_da_append(&block.inst, inst_1);
-		 qbe_da_append(&block.inst, inst_2);
-		 qbe_da_append(&block.inst, inst_3);
-		 qbe_da_append(&block.inst, inst_4);
-
-		 block.jmp.value = val[4];
+		block.jmp.value = val[4];
 
 
-		 qbe_da_append(&func.body, block);
-		 break;
+		break;
+	default: return 1;
 	}
+	qbe_da_append(&func.body, block);
 
 	qbe_da_append(&module.funcs, func);
 

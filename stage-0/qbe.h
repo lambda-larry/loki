@@ -111,7 +111,8 @@ enum qbe_type
 
 struct qbe_ident {
 	bool global;
-	struct qbe_sv string;
+	u32  id;
+	struct qbe_sv prefix;
 };
 
 struct qbe_type_struct_item {
@@ -246,7 +247,13 @@ struct qbe_value {
 #define qbe_value_ident(t, id, ...) {                                                              \
 	.kind         = QBE_VALUE_KIND_IDENT,                                                      \
 	.type         = t,                                                                         \
-	.ident.string = sv_c(id),                                                                  \
+	.ident.prefix = sv_c(id),                                                                  \
+	__VA_ARGS__                                                                                \
+}
+#define qbe_value_ident_id(t, ID, ...) {                                                           \
+	.kind         = QBE_VALUE_KIND_IDENT,                                                      \
+	.type         = t,                                                                         \
+	.ident.id     = ID,                                                                        \
 	__VA_ARGS__                                                                                \
 }
 #define qbe_value_decimal(t, value) {                                                              \
