@@ -105,6 +105,7 @@ lex_start:
 	  "+" { return RET(TT_PLUS);      }
 	  "-" { return RET(TT_MINUS);     }
 	  "*" { return RET(TT_ASTERISK);  }
+	  "/" { return RET(TT_SLASH);     }
 	  "(" { return RET(TT_LPAREN);    }
 	  ")" { return RET(TT_RPAREN);    }
 	  "{" { return RET(TT_LBRACE);    }

@@ -264,7 +264,15 @@ main(int argc, const char *argv[argc])
 					fprintf(f, ", ");
 					qbe_emit_value(f, inst->rhs);
 					fprintf(f, "\n");
-
+					break;
+				case QBE_INST_KIND_SUB:
+					fprintf(f, "\t");
+					qbe_emit_value(f, inst->dst);
+					fprintf(f, " =%c sub ", (int)inst->dst.type);
+					qbe_emit_value(f, inst->lhs);
+					fprintf(f, ", ");
+					qbe_emit_value(f, inst->rhs);
+					fprintf(f, "\n");
 					break;
 				case QBE_INST_KIND_MUL:
 					fprintf(f, "\t");
@@ -274,7 +282,15 @@ main(int argc, const char *argv[argc])
 					fprintf(f, ", ");
 					qbe_emit_value(f, inst->rhs);
 					fprintf(f, "\n");
-
+					break;
+				case QBE_INST_KIND_DIV:
+					fprintf(f, "\t");
+					qbe_emit_value(f, inst->dst);
+					fprintf(f, " =%c div ", (int)inst->dst.type);
+					qbe_emit_value(f, inst->lhs);
+					fprintf(f, ", ");
+					qbe_emit_value(f, inst->rhs);
+					fprintf(f, "\n");
 					break;
 				case QBE_INST_KIND_NEG:
 					fprintf(f, "\t");

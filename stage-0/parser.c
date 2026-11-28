@@ -103,12 +103,16 @@ parse_expr(struct lex *lex, int precedence, struct ast_node **ret)
 
 	static const bool is_op_bin[TT_LAST] = {
 		[TT_PLUS]     = true,
+		[TT_MINUS]    = true,
 		[TT_ASTERISK] = true,
+		[TT_SLASH]    = true,
 	};
 
 	static const int op_prec[TT_LAST] = {
 		[TT_PLUS]     = 10,
+		[TT_MINUS]    = 10,
 		[TT_ASTERISK] = 20,
+		[TT_SLASH]    = 20,
 	};
 
 	struct token token = {};
@@ -116,7 +120,9 @@ parse_expr(struct lex *lex, int precedence, struct ast_node **ret)
 	while (parse_peek(lexer, &token) && is_op_bin[token.type] && op_prec[token.type] >= precedence) {
 		static const enum ast_node_kind tok_to_ast[TT_LAST] = {
 			[TT_PLUS]     = AST_NODE_EXPR_BIN_ADD,
+			[TT_MINUS]    = AST_NODE_EXPR_BIN_SUB,
 			[TT_ASTERISK] = AST_NODE_EXPR_BIN_MUL,
+			[TT_SLASH]    = AST_NODE_EXPR_BIN_DIV,
 		};
 		lhs_expr = ast_node_alloc(tok_to_ast[token.type], .lex_begin = lexer, .lhs = lhs_expr);
 
